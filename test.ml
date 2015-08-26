@@ -22,7 +22,8 @@ let rec parse_and_print lexbuf =
     | Some command ->
        print_string "saw command\n";
        Logoturtle.print_command command;
-       print_string "\nfinised \n";
+       print_string "\nEvaluating\n";
+       Logoturtle.eval_command command;
        parse_and_print lexbuf
     | None -> ()
 

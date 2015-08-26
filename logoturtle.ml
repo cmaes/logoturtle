@@ -31,8 +31,7 @@ let create () = let surface = Cairo.Image.create Cairo.Image.ARGB32 200 200 in
                 Cairo.move_to ctx 0. 0.;
                 { x = 0.; y = 0.; heading = 0.; cr = ctx }
 
-let test = create ();;
-
+let base_state = create ();;
 
 let turn n state = state.heading <- state.heading +. n
 let pi = 4.0 *. atan(1.0)
@@ -67,7 +66,10 @@ let rec print_command cmd =
        List.iter print_command cmd;
        print_string " ] "
 
+let eval_command command = eval base_state command;
+                           write_out base_state
+
 (* Uncomment to test
-let () = eval test star;
-         write_out test
+let () = eval base_state star;
+         write_out base_state
 *)
