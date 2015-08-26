@@ -1,35 +1,56 @@
 open Cairo
 
-type arg = float
+
 type iter = int
+type name = string
+type param = string
+
+type arg =
+  | Number of float
+  | Var    of param
 
 type command =
    | Forward of arg
    | Turn of arg
-   | Repeat of iter * command list
+   | Repeat of arg * command list
+   | Call of name * arg list
+   | Proc of name * param list * command list
 
+exception ArgumentException of string
 
-let square = Repeat (4, [Forward 1.0; Turn 90.]);;
-let star   = Repeat (5, [Forward 1.0; Turn 144.]);;
+let square = Repeat ((Number 4.0), [Forward (Number 1.0); Turn (Number 90.)]);;
+let star   = Repeat ((Number 5.0), [Forward (Number 1.0); Turn (Number 144.)]);;
+let flower = [ Proc ("square", ["len"],
+                     [ Repeat ((Number 4.0),
+                               [(Forward (Var "len"));
+                                Turn (Number 90.)])
+                    ]);
+               Repeat ((Number 36.0),
+                       [ Turn (Number 10.);
+                         Call ("square", [(Number 0.4)])])
+             ];;
 
+module StringMap = Map.Make(String)
 
 type state = { mutable x: float;
                mutable y: float;
                mutable heading: float;
-               mutable cr: Cairo.context }
+               mutable cr: Cairo.context;
+               mutable symbol_table: (bytes, param list * command list) Hashtbl.t }
 
 
 
 let create () = let surface = Cairo.Image.create Cairo.Image.ARGB32 200 200 in
                 let ctx = Cairo.create surface in
+                let table = Hashtbl.create 100 in
                 Cairo.translate ctx 100. 100.;
                 Cairo.scale ctx 100. 100.;
-                Cairo.set_line_width ctx 0.1;
+                Cairo.set_line_width ctx 0.01;
                 Cairo.set_source_rgb ctx 0. 0. 0.;
                 Cairo.set_line_join ctx JOIN_MITER;
                 Cairo.set_line_cap ctx SQUARE;
                 Cairo.move_to ctx 0. 0.;
-                { x = 0.; y = 0.; heading = 0.; cr = ctx }
+                { x = 0.; y = 0.; heading = 0.; cr = ctx; symbol_table = table }
 
 let base_state = create ();;
 
@@ -48,26 +69,63 @@ let write_out state = let surface = Cairo.get_target state.cr in
                       Cairo.stroke state.cr;
                       Cairo.PNG.write surface "graphics.png"
 
-let rec eval state exp =
+
+let rec getValue env = function
+  | Number n -> n
+  | Var name -> getValue env (StringMap.find name env)
+
+let rec eval state env exp =
   match exp with
-    | Forward n -> forward n state
-    | Turn n    -> turn n state
-    | Repeat (n, cmd) ->
+    | Forward arg -> forward (getValue env arg) state
+    | Turn arg    -> turn (getValue env arg) state
+    | Repeat (arg, cmd) ->
+       let n = int_of_float (getValue env arg) in
        for i = 1 to n do
-         List.iter (eval state) cmd
+         List.iter (eval state env) cmd
        done
+    | Proc (name, ps, cmds) -> Hashtbl.add state.symbol_table name (ps, cmds)
+    | Call (name, args) ->
+       let ps, cmds = Hashtbl.find state.symbol_table name in
+       if List.length ps <> List.length args then
+         raise (ArgumentException "argument count mistmatch")
+       else
+         let extend_env = List.fold_left2
+                            (fun env key value -> StringMap.add key value env)
+                            env ps args in
+         List.iter (eval state extend_env) cmds
+
+
+let printArg = function
+  | Number n -> string_of_float n
+  | Var    name -> name
 
 let rec print_command cmd =
   match cmd with
-    | Forward n -> print_string ("Forward " ^ (string_of_float n) ^ " ")
-    | Turn    n -> print_string ("Turn " ^ (string_of_float n) ^ " ")
+    | Forward n -> print_string ("Forward " ^ (printArg n) ^ " ")
+    | Turn    n -> print_string ("Turn " ^ (printArg n) ^ " ")
     | Repeat (n, cmd) ->
-       print_string ("Repeat " ^ (string_of_int n) ^ " [ ");
+       print_string ("Repeat " ^ (printArg n) ^ " [ ");
        List.iter print_command cmd;
        print_string " ] "
+    | Call (name, args) ->
+       print_string (name ^ (String.concat  " " (List.map printArg args)) ^ " ")
+    | Proc (name, params, cmds) ->
+       print_string ("to " ^ name ^
+                       (String.concat " " (List.map (fun x -> ":" ^ x) params))
+                         ^ "\n");
+       List.iter print_command cmds;
+       print_string "end"
 
-let eval_command command = eval base_state command;
+
+let eval_command command = let base_env = StringMap.empty in
+                           eval base_state base_env command;
                            write_out base_state
+
+let eval_commands cmds = let base_env = StringMap.empty in
+                         List.iter (eval base_state base_env) cmds;
+                         write_out base_state
+
+let () = eval_commands flower
 
 (* Uncomment to test
 let () = eval base_state star;
