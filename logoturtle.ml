@@ -20,7 +20,6 @@ type state = { mutable x: float;
 
 
 
-
 let create () = let surface = Cairo.Image.create Cairo.Image.ARGB32 200 200 in
                 let ctx = Cairo.create surface in
                 Cairo.translate ctx 100. 100.;
@@ -59,6 +58,16 @@ let rec eval state exp =
          List.iter (eval state) cmd
        done
 
+let rec print_command cmd =
+  match cmd with
+    | Forward n -> print_string ("Forward " ^ (string_of_float n) ^ " ")
+    | Turn    n -> print_string ("Turn " ^ (string_of_float n) ^ " ")
+    | Repeat (n, cmd) ->
+       print_string ("Repeat " ^ (string_of_int n) ^ " [ ");
+       List.iter print_command cmd;
+       print_string " ] "
 
+(* Uncomment to test
 let () = eval test star;
          write_out test
+*)

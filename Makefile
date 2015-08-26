@@ -1,5 +1,10 @@
-all: graphics.png
+all: run
 
+run: test.native
+	./test.native square.logo
+
+test.native: test.ml logoturtle.ml parser.mly lexer.mll
+	ocamlbuild -use-menhir -tag thread -use-ocamlfind -quiet -pkg core -pkg cairo2 test.native
 
 logoturtle.byte: logoturtle.ml
 	ocamlfind ocamlc -linkpkg -thread -package cairo2 $< -o $@
@@ -9,4 +14,4 @@ graphics.png: logoturtle.byte
 	./logoturtle.byte
 
 clean:
-	-rm *.cmo *.cmi graphics.png *.byte
+	-rm *.cmo *.cmi graphics.png *.byte *.native

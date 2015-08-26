@@ -1,0 +1,1 @@
+repeat 4 [ forward 1.0 turn 90.0 ]
