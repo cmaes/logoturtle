@@ -5,31 +5,80 @@ type iter = int
 type name = string
 type param = string
 
-type arg =
-  | Number of float
-  | Var    of param
+type value =
+  | VBool of bool
+  | VFloat of float
+
+type expr =
+  | Var       of param
+  | Bool      of bool
+  | Number    of float
+  | Plus      of expr * expr
+  | Minus     of expr * expr
+  | Times     of expr * expr
+  | Divide    of expr * expr
+  | Negate    of expr
+  | Or        of expr * expr
+  | And       of expr * expr
+  | Not       of expr
+  | Less      of expr * expr
+  | Greater   of expr * expr
+  | Equal     of expr * expr
+  | NEqual    of expr * expr
+  | LessEq    of expr * expr
+  | GreaterEq of expr * expr
+
 
 type command =
-   | Forward of arg
-   | Right of arg
-   | Left  of arg
-   | Repeat of arg * command list
-   | Call of name * arg list
-   | Proc of name * param list * command list
+  | Stop
+  | Forward of expr
+  | Back    of expr
+  | Right   of expr
+  | Left    of expr
+  | Repeat  of expr * command list
+  | Call    of name * expr list
+  | Proc    of name * param list * command list
+  | If      of expr * command list
 
 exception ArgumentException of string
 
-let square = Repeat ((Number 4.0), [Forward (Number 1.0); Right (Number 90.)]);;
-let star   = Repeat ((Number 5.0), [Forward (Number 1.0); Right (Number 144.)]);;
+let square = Repeat ((Number 4.0),
+                     [Forward (Number 1.0); Right (Number 90.)]);;
+let star   = Repeat ((Number 5.0),
+                     [Forward (Number 1.0); Right (Number 144.)]);;
 let flower = [ Proc ("square", ["len"],
-                     [ Repeat ((Number 4.0),
+                     [ Repeat ((Times (Number 2.0, Number 2.0)),
                                [(Forward (Var "len"));
-                                Right (Number 90.)])
+                                (Right   (Number 90.))])
                     ]);
                Repeat ((Number 36.0),
                        [ Right (Number 10.);
                          Call ("square", [(Number 0.4)])])
              ];;
+
+let tree = [ Proc ("tree", ["size"],
+                   [ If ((Less (Var "size", Number 0.05)),
+                         [ Forward (Var "size");
+                           Back    (Var "size");
+                           Stop ]);
+                     Forward (Divide (Var "size", Number 3.));
+                     Left    (Number 30.);
+                     Call    ("tree", [(Times (Var "size", (Divide (Number 2., Number 3.))))]);
+                     Right   (Number 30.);
+                     Forward (Divide (Var "size", Number 6.));
+                     Right   (Number 25.);
+                     Call    ("tree", [(Divide (Var "size", Number 2.))]);
+                     Left    (Number 25.);
+                     Forward (Divide (Var "size", Number 3.));
+                     Right   (Number 25.);
+                     Call    ("tree", [(Divide (Var "size", Number 2.))]);
+                     Left    (Number 25.);
+                     Forward (Divide (Var "size", Number 6.));
+                     Back    (Var "size")
+                   ]);
+             Call ("tree", [(Number 0.5)]);
+           ];;
+
 
 module StringMap = Map.Make(String)
 
@@ -41,11 +90,11 @@ type state = { mutable x: float;
 
 
 
-let create () = let surface = Cairo.Image.create Cairo.Image.ARGB32 200 200 in
+let create () = let surface = Cairo.Image.create Cairo.Image.ARGB32 800 800 in
                 let ctx = Cairo.create surface in
                 let table = Hashtbl.create 100 in
-                Cairo.translate ctx 100. 100.;
-                Cairo.scale ctx 100. 100.;
+                Cairo.translate ctx 400. 400.;
+                Cairo.scale ctx 400. 400.;
                 Cairo.set_line_width ctx 0.01;
                 Cairo.set_source_rgb ctx 0. 0. 0.;
                 Cairo.set_line_join ctx JOIN_MITER;
@@ -71,53 +120,179 @@ let write_out state = let surface = Cairo.get_target state.cr in
                       Cairo.PNG.write surface "graphics.png"
 
 
-let rec getValue env = function
-  | Number n -> n
+(*let rec getValue env v =
+  match v with
+  | Bool   b -> VBool b
+  | Number n -> VFloat n
   | Var name -> getValue env (StringMap.find name env)
+ *)
 
-let rec eval state env exp =
-  match exp with
-    | Forward arg -> forward (getValue env arg) state
-    | Right arg    -> turn (getValue env arg) state
-    | Left  arg    -> turn ~-.(getValue env arg) state
-    | Repeat (arg, cmd) ->
-       let n = int_of_float (getValue env arg) in
-       for i = 1 to n do
-         List.iter (eval state env) cmd
-       done
-    | Proc (name, ps, cmds) -> Hashtbl.add state.symbol_table name (ps, cmds)
-    | Call (name, args) ->
-       let ps, cmds = Hashtbl.find state.symbol_table name in
-       if List.length ps <> List.length args then
-         raise (ArgumentException "argument count mistmatch")
-       else
-         let extend_env = List.fold_left2
-                            (fun env key value -> StringMap.add key value env)
-                            env ps args in
-         List.iter (eval state extend_env) cmds
+let expr_of_value = function
+  | VBool  b -> Bool b
+  | VFloat f -> Number f
+
+let float_of_value = function
+  | VFloat f -> f
+  | VBool  b -> failwith "Number expected"
+
+let bool_of_value = function
+  | VBool b -> b
+  | VFloat f -> failwith "Boolean expected"
+
+let rec eval_expr env = function
+  | Var name           -> (StringMap.find name env)
+  | Bool b             -> VBool  b
+  | Number n           -> VFloat n
+  | Plus  (e1, e2)     -> (match (eval_expr env e1),  (eval_expr env e2) with
+                           | VFloat a, VFloat b -> VFloat (a +. b)
+                           | _,_ -> failwith "Numbers expected in addition")
+  | Minus (e1, e2)     -> (match (eval_expr env e1), (eval_expr env e2) with
+                           | VFloat a, VFloat b -> VFloat (a -. b)
+                           | _,_ -> failwith "Numbers expected in subtraction")
+  | Times (e1, e2)     -> (match (eval_expr env e1), (eval_expr env e2) with
+                           | VFloat a, VFloat b -> VFloat (a *. b)
+                           | _,_ -> failwith "Numbers expected in multiplication")
+  | Divide (e1, e2)    -> (match (eval_expr env e1), (eval_expr env e2) with
+                           | VFloat a, VFloat 0.0 -> failwith "Division by zero"
+                           | VFloat a, VFloat b   -> VFloat (a /. b)
+                           | _,_ -> failwith "Numbers expected in division")
+  | Negate e           -> (match (eval_expr env e) with
+                           | VFloat a -> VFloat ~-. a
+                           | _ -> failwith "Numbers expected in negation")
+  | Or (e1, e2)        -> (match (eval_expr env e1) with
+                           | VBool true -> VBool true
+                           | VBool a -> (match  (eval_expr env e2) with
+                                         | VBool b -> VBool (a || b)
+                                         | _ -> failwith "Boolean expected in or")
+                           | _ -> failwith "Booleans expected in or")
+  | And (e1, e2)       -> (match (eval_expr env e1) with
+                           | VBool false -> VBool false
+                           | VBool a -> (match (eval_expr env e2) with
+                                         | VBool b -> VBool (a && b)
+                                         | _ -> failwith "Boolean expected in and")
+                           | _ -> failwith "Boolean expected in and")
+  | Not e              -> (match (eval_expr env e) with
+                           | VBool a -> VBool (not a)
+                           | _ -> failwith "Boolean expected in not")
+  | Less (e1, e2)      -> (match (eval_expr env e1), (eval_expr env e2) with
+                           | VFloat a, VFloat b -> VBool (a < b)
+                           | _,_ -> failwith "Number expected in < comparsion")
+  | Greater (e1, e2)   -> (match (eval_expr env e1), (eval_expr env e2) with
+                           | VFloat a, VFloat b -> VBool (a > b)
+                           | _,_ -> failwith "Number expected in > comparison")
+  | Equal   (e1, e2)   -> (match (eval_expr env e1), (eval_expr env e2) with
+                           | VFloat a, VFloat b -> VBool (a = b)
+                           | _,_ -> failwith "Number expected in == comparison")
+  | NEqual  (e1, e2)   -> (match (eval_expr env e1), (eval_expr env e2) with
+                           | VFloat a, VFloat b -> VBool (a != b)
+                           | _,_ -> failwith "Number expected in != comparsion")
+  | LessEq  (e1, e2)   -> (match (eval_expr env e1), (eval_expr env e2) with
+                           | VFloat a, VFloat b -> VBool (a <= b)
+                           | _,_ -> failwith "Number expected in <= comparison")
+  | GreaterEq (e1, e2) -> (match (eval_expr env e1), (eval_expr env e2) with
+                           | VFloat a, VFloat b -> VBool (a >= b)
+                           | _,_ -> failwith "Number expected in >= comparison")
 
 
-let printArg = function
+exception StopException
+
+let rec eval state env inst =
+  match inst with
+  | Stop -> raise (StopException)
+  | Forward exp -> forward (float_of_value (eval_expr env exp)) state
+  | Back    exp -> forward ~-.(float_of_value (eval_expr env exp)) state
+  | Right   exp -> turn (float_of_value    (eval_expr env exp)) state
+  | Left    exp -> turn ~-.(float_of_value (eval_expr env exp)) state
+  | Repeat (exp, cmd) ->
+     let n = int_of_float (float_of_value (eval_expr env exp)) in
+     for i = 1 to n do
+       List.iter (eval state env) cmd
+     done
+  | Proc (name, ps, cmds) -> Hashtbl.add state.symbol_table name (ps, cmds)
+  | Call (name, args) ->
+     let ps, cmds = Hashtbl.find state.symbol_table name in
+     if List.length ps <> List.length args then
+       raise (ArgumentException "argument count mistmatch")
+     else
+       let extend_env = List.fold_left2
+                          (fun env key exp -> StringMap.add key (eval_expr env exp) env)
+                          env ps args in
+       (try List.iter (eval state extend_env) cmds with
+        | StopException -> ())
+  | If (exp, cmds) -> if (bool_of_value (eval_expr env exp))
+                      then List.iter (eval state env) cmds
+
+
+let string_of_value = function
+  | Bool   b -> string_of_bool b
   | Number n -> string_of_float n
   | Var    name -> name
 
+(* prec  | operator  | operator
+   level | character | name
+   ==================================
+       6 | - !       | unary minus, logical not
+       5 | * /       | multiplication, division
+       4 | + -       | addition, subtraction
+       3 | < <= > >= | comparison operators
+       2 | == !=     | equality operators
+       1 | &&        | logical and
+       0 | ||        | logical or
+
+There are 8 levels of precedence.
+
+*)
+
+
+
+let string_of_expr e =
+  let rec to_str n e =
+    let (m, str) = match e with
+      | Var name           -> (7, name)
+      | Number n           -> (7, string_of_float n)
+      | Bool  b            -> (7, string_of_bool b)
+      | Negate e           -> (6, "-" ^ (to_str 0 e))
+      | Not   b            -> (6, "!" ^ (to_str 0 b))
+      | Times     (e1, e2) -> (5, (to_str 5 e1) ^ " * " ^ (to_str 6 e2))
+      | Divide    (e1, e2) -> (5, (to_str 5 e1) ^ " / " ^ (to_str 6 e2))
+      | Plus      (e1, e2) -> (4, (to_str 4 e1) ^ " + " ^ (to_str 5 e2))
+      | Minus     (e1, e2) -> (4, (to_str 4 e1) ^ " - " ^ (to_str 5 e2))
+      | Less      (e1, e2) -> (3, (to_str 3 e1) ^ " < " ^ (to_str 4 e2))
+      | LessEq    (e1, e2) -> (3, (to_str 3 e1) ^ " <= " ^ (to_str 4 e2))
+      | Greater   (e1, e2) -> (3, (to_str 3 e1) ^ " > " ^ (to_str 4 e2))
+      | GreaterEq (e1, e2) -> (3, (to_str 3 e1) ^ " >= " ^ (to_str 4 e2))
+      | Equal     (e1, e2) -> (2, (to_str 2 e1) ^ " == " ^ (to_str 3 e2))
+      | NEqual    (e1, e2) -> (2, (to_str 2 e1) ^ " != " ^ (to_str 3 e2))
+      | And       (b1, b2) -> (1, (to_str 1 b1) ^ " && " ^ (to_str 2 b2))
+      | Or        (b1, b2) -> (0, (to_str 0 b1) ^ " || " ^ (to_str 1 b2))
+    in
+       if m < n then "(" ^ str ^ ")" else str
+  in
+     to_str (-1) e
+
 let rec print_command cmd =
   match cmd with
-    | Forward n -> print_string ("Forward " ^ (printArg n) ^ " ")
-    | Right   n -> print_string ("Right " ^ (printArg n) ^ " ")
-    | Left    n -> print_string ("Left  " ^ (printArg n) ^ " ")
-    | Repeat (n, cmd) ->
-       print_string ("Repeat " ^ (printArg n) ^ " [ ");
+    | Stop      -> print_string "stop"
+    | Forward e -> print_string ("forward " ^ (string_of_expr e) ^ " ")
+    | Back    e -> print_string ("back " ^ (string_of_expr e ) ^ " ")
+    | Right   e -> print_string ("right " ^ (string_of_expr e) ^ " ")
+    | Left    e -> print_string ("left  " ^ (string_of_expr e) ^ " ")
+    | Repeat (e, cmd) ->
+       print_string ("repeat " ^ (string_of_expr e) ^ " [ ");
        List.iter print_command cmd;
        print_string " ] "
     | Call (name, args) ->
-       print_string (name ^ (String.concat  " " (List.map printArg args)) ^ " ")
+       print_string (name ^ " " ^ (String.concat  " " (List.map string_of_expr args)) ^ " ")
     | Proc (name, params, cmds) ->
        print_string ("to " ^ name ^
                        (String.concat " " (List.map (fun x -> ":" ^ x) params))
                          ^ "\n");
        List.iter print_command cmds;
        print_string "\nend\n"
+    | If (e, cmds) ->
+       print_string ("if " ^ (string_of_expr e) ^ " [ ");
+       List.iter print_command cmds;
+       print_string  " ]\n"
 
 let rec print_commands cmds =
   match cmds with
@@ -133,9 +308,10 @@ let eval_commands cmds = let base_env = StringMap.empty in
                          List.iter (eval base_state base_env) cmds;
                          write_out base_state
 
-(*
-let () = eval_commands flower
- *)
+
+let () = print_commands tree;
+         print_string "\n";
+         eval_commands tree
 
 (* Uncomment to test
 let () = eval base_state star;
