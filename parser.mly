@@ -20,11 +20,15 @@
 %%
 
 prog:
-  | EOF                   { [] }
-  | c = command; EOF      { [c] }
-  | c = command; p = prog { c :: p }
+  | EOF                       { [] }
+  | cmds = command_list; EOF  { cmds }
   ;
 
+command_list: cmds = rev_command_list { List.rev cmds }
+rev_command_list:
+  | c = command; { [c] }
+  | cmds = command_list; cmd = command; { cmd :: cmds }
+    ;
 
 value:
   | x = FLOAT  { Number x }
