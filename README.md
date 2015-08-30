@@ -43,3 +43,8 @@ To clean up do
 ```
 make clean
 ```
+
+
+## Logo Grammar
+
+I made my own up. But there is one [here](https://www.cs.duke.edu/courses/spring00/cps108/projects/slogo/slogo.g)

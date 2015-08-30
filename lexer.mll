@@ -21,19 +21,24 @@ let float = digit* frac? exp?
 
 let white = [' ' '\t']+
 let newline = '\r' | '\n' | "\r\n"
-let id = ['a'-'z' 'A'-'Z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
+let id =  ['a'-'z' 'A'-'Z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
+let param = [':'] ['a'-'z' 'A'-'Z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
 
 
 rule read =
   parse
   | white     { read lexbuf }
   | newline   { next_line lexbuf; read lexbuf }
-  | int       { INT (int_of_string (Lexing.lexeme lexbuf)) }
   | float     { FLOAT (float_of_string (Lexing.lexeme lexbuf)) }
-  | "turn"    { TURN }
+  | "to"      { TO }
+  | "end"     { END }
   | "forward" { FORWARD }
+  | "right"   { RIGHT }
+  | "left"    { LEFT  }
   | "repeat"  { REPEAT  }
   | '['       { LEFT_BRACKET }
   | ']'       { RIGHT_BRACKET }
+  | id        { ID (Lexing.lexeme lexbuf) }
+  | param     { PARAM (Lexing.lexeme lexbuf) }
   | _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }
   | eof       { EOF }

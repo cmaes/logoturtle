@@ -1,1 +1,1 @@
-repeat 10 [ turn 36.0 repeat 5 [ forward .6 turn 72.0]]
+repeat 10 [ right 36.0 repeat 5 [ forward .6 right 72.0]]

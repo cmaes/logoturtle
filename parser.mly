@@ -1,29 +1,42 @@
 %{
     (* Put OCaml helper functions here *)
+    open Logoturtle
 %}
 
-%token <int> INT
 %token <float> FLOAT
+%token <string> ID
+%token <string> PARAM
 %token LEFT_BRACKET
 %token RIGHT_BRACKET
 %token FORWARD
-%token TURN
+%token RIGHT
+%token LEFT
 %token REPEAT
+%token TO
+%token END
 %token EOF
 
-%start <Logoturtle.command option> prog
+%start <Logoturtle.command list> prog
 %%
 
 prog:
-  | EOF         { None }
-  | c = command { Some c }
+  | EOF                   { [] }
+  | c = command; EOF      { [c] }
+  | c = command; p = prog { c :: p }
   ;
 
 
+value:
+  | x = FLOAT  { Number x }
+  | p = PARAM  { Var p   }
+
 command:
-  |  TURN; x = FLOAT     { Turn x }
-  |  FORWARD; x = FLOAT  { Forward x }
-  |  REPEAT; i = INT; LEFT_BRACKET; cmd = command_fields; RIGHT_BRACKET { Repeat (i, cmd) }
+  |  FORWARD; v = value  { Forward v }
+  |  RIGHT; v = value    { Right v }
+  |  LEFT; v = value     { Left  v }
+  |  REPEAT; i = value; LEFT_BRACKET; cmd = command_fields; RIGHT_BRACKET { Repeat (i, cmd) }
+  |  name = ID; args = args_list; { Call (name, args) }
+  |  TO; name = ID; params = params_list; cmds = command_fields; END { Proc (name, params, cmds) }
   ;
 
 command_fields: cmd = rev_command_fields { List.rev cmd };
@@ -31,3 +44,13 @@ command_fields: cmd = rev_command_fields { List.rev cmd };
 rev_command_fields:
   | (* empty *) { [] }
   | cmds = rev_command_fields; c = command  { c :: cmds }
+
+args_list: args = rev_args_list { List.rev args }
+rev_args_list:
+  | (* empty *) { [] }
+  | args = rev_args_list; v = value { v :: args }
+
+params_list: params = rev_params_list { List.rev params }
+rev_params_list:
+  | (* empty *) { [] }
+  | params = rev_params_list; p = PARAM { p :: params }

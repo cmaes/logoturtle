@@ -1,0 +1,7 @@
+to square
+  repeat 4 [forward .5 right 90]
+end
+to flower
+  repeat 36 [right 10 square]
+end
+flower

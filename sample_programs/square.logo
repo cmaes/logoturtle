@@ -1,1 +1,1 @@
-repeat 4 [ forward 1.0 turn 90.0 ]
+repeat 4 [ forward 1.0 right 90.0 ]

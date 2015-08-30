@@ -1,1 +1,1 @@
-repeat 5 [ forward 1.0 turn 144.0 ]
+repeat 5 [ forward 1.0 right 144.0 ]

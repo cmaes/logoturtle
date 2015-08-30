@@ -1,0 +1,13 @@
+to sawtooth
+  right   45
+  forward .2828
+  left    135
+  forward .2
+  right   90
+end
+
+to sawblade
+  repeat 12 [ sawtooth right 30 ]
+end
+
+sawblade

@@ -1,7 +1,7 @@
 all: run
 
-run: test.native sample_programs/tile.logo
-	./test.native sample_programs/tile.logo
+run: test.native sample_programs/flower.logo
+	./test.native sample_programs/flower.logo
 
 test.native: test.ml logoturtle.ml parser.mly lexer.mll
 	ocamlbuild -use-menhir -tag thread -use-ocamlfind -quiet -pkg core -pkg cairo2 test.native

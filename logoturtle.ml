@@ -11,22 +11,23 @@ type arg =
 
 type command =
    | Forward of arg
-   | Turn of arg
+   | Right of arg
+   | Left  of arg
    | Repeat of arg * command list
    | Call of name * arg list
    | Proc of name * param list * command list
 
 exception ArgumentException of string
 
-let square = Repeat ((Number 4.0), [Forward (Number 1.0); Turn (Number 90.)]);;
-let star   = Repeat ((Number 5.0), [Forward (Number 1.0); Turn (Number 144.)]);;
+let square = Repeat ((Number 4.0), [Forward (Number 1.0); Right (Number 90.)]);;
+let star   = Repeat ((Number 5.0), [Forward (Number 1.0); Right (Number 144.)]);;
 let flower = [ Proc ("square", ["len"],
                      [ Repeat ((Number 4.0),
                                [(Forward (Var "len"));
-                                Turn (Number 90.)])
+                                Right (Number 90.)])
                     ]);
                Repeat ((Number 36.0),
-                       [ Turn (Number 10.);
+                       [ Right (Number 10.);
                          Call ("square", [(Number 0.4)])])
              ];;
 
@@ -77,7 +78,8 @@ let rec getValue env = function
 let rec eval state env exp =
   match exp with
     | Forward arg -> forward (getValue env arg) state
-    | Turn arg    -> turn (getValue env arg) state
+    | Right arg    -> turn (getValue env arg) state
+    | Left  arg    -> turn ~-.(getValue env arg) state
     | Repeat (arg, cmd) ->
        let n = int_of_float (getValue env arg) in
        for i = 1 to n do
@@ -102,7 +104,8 @@ let printArg = function
 let rec print_command cmd =
   match cmd with
     | Forward n -> print_string ("Forward " ^ (printArg n) ^ " ")
-    | Turn    n -> print_string ("Turn " ^ (printArg n) ^ " ")
+    | Right   n -> print_string ("Right " ^ (printArg n) ^ " ")
+    | Left    n -> print_string ("Left  " ^ (printArg n) ^ " ")
     | Repeat (n, cmd) ->
        print_string ("Repeat " ^ (printArg n) ^ " [ ");
        List.iter print_command cmd;
@@ -114,7 +117,12 @@ let rec print_command cmd =
                        (String.concat " " (List.map (fun x -> ":" ^ x) params))
                          ^ "\n");
        List.iter print_command cmds;
-       print_string "end"
+       print_string "\nend\n"
+
+let rec print_commands cmds =
+  match cmds with
+    | [] -> ()
+    | h :: t -> print_command h; print_commands t
 
 
 let eval_command command = let base_env = StringMap.empty in
@@ -125,7 +133,9 @@ let eval_commands cmds = let base_env = StringMap.empty in
                          List.iter (eval base_state base_env) cmds;
                          write_out base_state
 
+(*
 let () = eval_commands flower
+ *)
 
 (* Uncomment to test
 let () = eval base_state star;
