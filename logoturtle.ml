@@ -1,6 +1,5 @@
 open Cairo
 
-
 type iter = int
 type name = string
 type param = string
@@ -27,7 +26,6 @@ type expr =
   | NEqual    of expr * expr
   | LessEq    of expr * expr
   | GreaterEq of expr * expr
-
 
 type command =
   | Stop
@@ -94,8 +92,16 @@ let pi = 4.0 *. atan(1.0);;
 let create () = let surface = Cairo.Image.create Cairo.Image.ARGB32 800 800 in
                 let ctx = Cairo.create surface in
                 let table = Hashtbl.create 100 in
+                (* paint background white *)
+                Cairo.rectangle ctx 0.0 0.0 800. 800.;
+                Cairo.set_source_rgb ctx 1.0 1.0 1.0;
+                Cairo.fill ctx;
+
+                (* setup turtle coordinates *)
                 Cairo.translate ctx 400. 400.;
                 Cairo.scale ctx 2. 2.;
+
+                (* setup turtle line properties *)
                 Cairo.set_line_width ctx 1.0;
                 Cairo.set_source_rgb ctx 0. 0. 0.;
                 Cairo.set_line_join ctx JOIN_MITER;
