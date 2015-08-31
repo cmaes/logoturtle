@@ -18,7 +18,7 @@ let frac = '.' digit*
 let exp = ['e' 'E'] ['-' '+']? digit+
 let float = digit* frac? exp?
 
-let comment = '#' [^ '\n' '\r']*
+let comment = ';' [^ '\n' '\r']*
 let white = [' ' '\t']+
 let newline = '\r' | '\n' | "\r\n"
 let id =  ['a'-'z' 'A'-'Z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
