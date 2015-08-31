@@ -6,17 +6,45 @@
 %token <float> FLOAT
 %token <string> ID
 %token <string> PARAM
-%token LEFT_BRACKET
-%token RIGHT_BRACKET
-%token FORWARD
-%token RIGHT
-%token LEFT
-%token REPEAT
+%token <bool>   BOOL
+%token PLUS
+%token MINUS
+%token TIMES
+%token DIVIDE
+%token OR
+%token AND
+%token NOT
+%token LESS
+%token GREATER
+%token EQUAL
+%token NOTEQUAL
+%token LESSEQUAL
+%token GREATEREQUAL
+%token IF
+%token STOP
 %token TO
 %token END
+%token FORWARD
+%token BACK
+%token LEFT
+%token RIGHT
+%token REPEAT
+%token LEFT_BRACKET
+%token RIGHT_BRACKET
+%token LEFT_PAREN
+%token RIGHT_PAREN
 %token EOF
 
 %start <Logoturtle.command list> prog
+
+(* the order of the following is important to define precedence *)
+%left OR
+%left AND
+%nonassoc NOT
+%nonassoc EQUAL NOTEQUAL
+%nonassoc LESS LESSEQUAL GREATER GREATEREQUAL
+%left PLUS MINUS
+%left TIMES DIVIDE
 %%
 
 prog:
@@ -30,17 +58,48 @@ rev_command_list:
   | cmds = command_list; cmd = command; { cmd :: cmds }
     ;
 
-value:
-  | x = FLOAT  { Number x }
-  | p = PARAM  { Var p   }
+expr:
+  | b = base     { b }
+  | a = arith    { a }
+  | b = boolean  { b }
+
+base:
+  | p = PARAM                         { Var p }
+  | b = BOOL                          { Bool b }
+  | f = FLOAT                         { Number f }
+  | LEFT_PAREN; e = expr; RIGHT_PAREN { e }
+  ;
+
+arith:
+  | e1 = expr; PLUS;   e2 = expr  { Plus  (e1, e2)  }
+  | e1 = expr; MINUS;  e2 = expr  { Minus (e1, e2)  }
+  | e1 = expr; TIMES;  e2 = expr  { Times (e1, e2)  }
+  | e1 = expr; DIVIDE; e2 = expr  { Divide (e1, e2) }
+  | MINUS; e = expr               { Negate e        } %prec TIMES
+  ;
+
+boolean:
+  | NOT; e = expr;                     { Not e }
+  | e1 = expr; LESS;         e2 = expr { Less (e1, e2) }
+  | e1 = expr; GREATER;      e2 = expr { Greater (e1, e2) }
+  | e1 = expr; LESSEQUAL;    e2 = expr { LessEq (e1, e2) }
+  | e1 = expr; GREATEREQUAL; e2 = expr { GreaterEq (e1, e2) }
+  | e1 = expr; EQUAL;        e2 = expr { Equal (e1, e2) }
+  | e1 = expr; NOTEQUAL;     e2 = expr { NEqual (e1, e2) }
+  | e1 = expr; OR;           e2 = expr { Or (e1, e2) }
+  | e1 = expr; AND;          e2 = expr { And (e1, e2 ) }
+  ;
 
 command:
-  |  FORWARD; v = value  { Forward v }
-  |  RIGHT; v = value    { Right v }
-  |  LEFT; v = value     { Left  v }
-  |  REPEAT; i = value; LEFT_BRACKET; cmd = command_fields; RIGHT_BRACKET { Repeat (i, cmd) }
+  |  STOP  { Stop }
+  |  FORWARD; e = expr  { Forward e }
+  |  BACK; e = expr     { Back e }
+  |  RIGHT; e = expr    { Right e }
+  |  LEFT; e = expr     { Left  e }
+  |  REPEAT; e = expr; LEFT_BRACKET; cmds = command_fields; RIGHT_BRACKET { Repeat (e, cmds) }
   |  name = ID; args = args_list; { Call (name, args) }
   |  TO; name = ID; params = params_list; cmds = command_fields; END { Proc (name, params, cmds) }
+  |  IF; e = expr; LEFT_BRACKET; cmds = command_fields; RIGHT_BRACKET { If (e, cmds) }
   ;
 
 command_fields: cmd = rev_command_fields { List.rev cmd };
@@ -52,7 +111,7 @@ rev_command_fields:
 args_list: args = rev_args_list { List.rev args }
 rev_args_list:
   | (* empty *) { [] }
-  | args = rev_args_list; v = value { v :: args }
+  | args = rev_args_list; e = expr { e :: args }
 
 params_list: params = rev_params_list { List.rev params }
 rev_params_list:

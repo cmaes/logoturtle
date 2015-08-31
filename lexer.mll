@@ -30,14 +30,34 @@ rule read =
   | white     { read lexbuf }
   | newline   { next_line lexbuf; read lexbuf }
   | float     { FLOAT (float_of_string (Lexing.lexeme lexbuf)) }
+  | "true"    { BOOL (bool_of_string (Lexing.lexeme lexbuf)) }
+  | "false"   { BOOL (bool_of_string (Lexing.lexeme lexbuf)) }
+  | "+"       { PLUS }
+  | "-"       { MINUS }
+  | "*"       { TIMES }
+  | "/"       { DIVIDE }
+  | "||"      { OR }
+  | "&&"      { AND }
+  | "!"       { NOT }
+  | "<"       { LESS }
+  | ">"       { GREATER }
+  | "=="      { EQUAL }
+  | "!="      { NOTEQUAL }
+  | "<="      { LESSEQUAL }
+  | ">="      { GREATEREQUAL }
+  | "if"      { IF }
+  | "stop"    { STOP }
   | "to"      { TO }
   | "end"     { END }
   | "forward" { FORWARD }
+  | "back"    { BACK }
   | "right"   { RIGHT }
   | "left"    { LEFT  }
   | "repeat"  { REPEAT  }
   | '['       { LEFT_BRACKET }
   | ']'       { RIGHT_BRACKET }
+  | '('       { LEFT_PAREN }
+  | ')'       { RIGHT_PAREN }
   | id        { ID (Lexing.lexeme lexbuf) }
   | param     { PARAM (Lexing.lexeme lexbuf) }
   | _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }

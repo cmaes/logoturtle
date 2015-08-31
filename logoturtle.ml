@@ -89,6 +89,7 @@ type state = { mutable x: float;
                mutable symbol_table: (bytes, param list * command list) Hashtbl.t }
 
 
+let pi = 4.0 *. atan(1.0);;
 
 let create () = let surface = Cairo.Image.create Cairo.Image.ARGB32 800 800 in
                 let ctx = Cairo.create surface in
@@ -105,8 +106,7 @@ let create () = let surface = Cairo.Image.create Cairo.Image.ARGB32 800 800 in
 let base_state = create ();;
 
 let turn n state = state.heading <- state.heading +. n
-let pi = 4.0 *. atan(1.0)
-let forward n state = let r = state.heading *. pi /. 180.0 in
+let forward n state = let r = (state.heading *. pi /. 180.0) -. (pi /. 2.0) in
                       let dx = n *. cos(r) in
                       let dy = n *. sin(r) in
                       state.x <- state.x +. dx;
@@ -309,9 +309,11 @@ let eval_commands cmds = let base_env = StringMap.empty in
                          write_out base_state
 
 
+(*
 let () = print_commands tree;
          print_string "\n";
          eval_commands tree
+*)
 
 (* Uncomment to test
 let () = eval base_state star;
