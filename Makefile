@@ -15,3 +15,4 @@ graphics.png: logoturtle.byte
 
 clean:
 	-rm *.cmo *.cmi graphics.png *.byte *.native
+	-rm -rf _build/
