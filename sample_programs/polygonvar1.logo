@@ -1,0 +1,4 @@
+; Polygon variation 1 by Paolo Passaro
+; from http://www.mathcats.com/gallery/15wordcontest.html
+
+repeat 4 [repeat 30 [lt 90 fd 4 rt 90 fd 4] rt 90]

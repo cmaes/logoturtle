@@ -1,0 +1,8 @@
+; Dahlia program by David Eisenstat
+; from http://www.mathcats.com/gallery/15wordcontest.html
+
+repeat 8 [rt 45 repeat 6 [repeat 90 [fd 2 rt 2] rt 90]]
+
+; The 6 can be replaced with 1 to 7 for other flowers.
+; For numbers greater than 7, the patterns repeat.
+; This will work without modification in absolutely all Logo implementations.

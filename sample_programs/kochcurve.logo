@@ -1,0 +1,17 @@
+; Koch Curve program from
+; http://utdallas.edu/~veerasam/logo/
+
+to kochCurve :level :size
+  if :level < 1 [ fd :size stop ]
+  kochCurve :level - 1 :size / 3
+  lt 60
+  kochCurve :level - 1 :size / 3
+  rt 120
+  kochCurve :level - 1 :size / 3
+  lt 60
+  kochCurve :level - 1 :size / 3
+end
+
+;cs
+rt 90
+kochCurve 4 200

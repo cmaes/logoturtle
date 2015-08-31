@@ -1,0 +1,4 @@
+; Polygon variation 3 by Paolo Passaro
+; from http://www.mathcats.com/gallery/15wordcontest.html
+
+repeat 8 [repeat 20 [lt 170 fd 20 rt 170 fd 20] rt 45]

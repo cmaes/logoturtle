@@ -1,0 +1,3 @@
+; Pentahexagon program by M.H. Elhefni
+; from http://www.mathcats.com/gallery/15wordcontest.html
+repeat 5 [repeat 6 [fd 100 lt 72] lt 144]
