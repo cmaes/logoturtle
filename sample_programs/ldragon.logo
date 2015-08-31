@@ -1,0 +1,29 @@
+; Dragon curve program based on
+;   http://drj11.github.io/curlylogo/gallery/
+; which is adapted from Turtle Geometry: The Computer as a Medium for
+; Exploring Mathematics
+; by Harold Abelson and Adrea diSessa
+
+to ldragon :size :level
+   if :level == 0 [
+    fd :size
+    stop
+   ]
+   ldragon :size :level - 1
+   lt 90
+   rdragon :size :level - 1
+end
+
+to rdragon :size :level
+   if :level == 0 [
+   fd :size
+   stop
+   ]
+   ldragon :size :level - 1
+   rt 90
+   rdragon :size :level - 1
+end
+; we don't support the next command yet
+; cs setpw 1 pu fd 0.5 rt 90 fd 0.5 pd
+
+ldragon 2 13
