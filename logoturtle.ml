@@ -95,8 +95,8 @@ let create () = let surface = Cairo.Image.create Cairo.Image.ARGB32 800 800 in
                 let ctx = Cairo.create surface in
                 let table = Hashtbl.create 100 in
                 Cairo.translate ctx 400. 400.;
-                Cairo.scale ctx 400. 400.;
-                Cairo.set_line_width ctx 0.01;
+                Cairo.scale ctx 2. 2.;
+                Cairo.set_line_width ctx 1.0;
                 Cairo.set_source_rgb ctx 0. 0. 0.;
                 Cairo.set_line_join ctx JOIN_MITER;
                 Cairo.set_line_cap ctx SQUARE;

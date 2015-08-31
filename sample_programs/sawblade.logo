@@ -1,8 +1,8 @@
 to sawtooth
   right   45
-  forward .2828
+  forward 56.56
   left    135
-  forward .2
+  forward 40
   right   90
 end
 

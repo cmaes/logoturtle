@@ -1,5 +1,5 @@
 to fern :size :sign
-  if :size < 1e-4  [ stop ]
+  if :size < 1  [ stop ]
   fd :size
   rt 70 * :sign fern :size * 0.5 :sign * -1 lt 70 * :sign
   fd :size
@@ -7,4 +7,4 @@ to fern :size :sign
   rt 7 * :sign fern :size - 1 :sign lt 7 * :sign
   bk :size * 2
 end
-fern .25 1
+fern 25 1
