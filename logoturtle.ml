@@ -111,7 +111,7 @@ let forward n state = let r = (state.heading *. pi /. 180.0) -. (pi /. 2.0) in
                       let dy = n *. sin(r) in
                       state.x <- state.x +. dx;
                       state.y <- state.y +. dy;
-                      print_string ((string_of_float state.x) ^ " " ^ (string_of_float state.y) ^ "\n");
+                      (* print_string ((string_of_float state.x) ^ " " ^ (string_of_float state.y) ^ "\n"); *)
                       Cairo.line_to state.cr state.x state.y
 
 
