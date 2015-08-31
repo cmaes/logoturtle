@@ -50,9 +50,13 @@ rule read =
   | "to"      { TO }
   | "end"     { END }
   | "forward" { FORWARD }
+  | "fd"      { FORWARD }
   | "back"    { BACK }
+  | "bk"      { BACK }
   | "right"   { RIGHT }
+  | "rt"      { RIGHT }
   | "left"    { LEFT  }
+  | "lt"      { LEFT  }
   | "repeat"  { REPEAT  }
   | '['       { LEFT_BRACKET }
   | ']'       { RIGHT_BRACKET }
