@@ -1,0 +1,19 @@
+; Fanblade program from http://fmslogo.sourceforge.net/workshop/getting-started.shtml
+to fanblade
+  repeat 2 [
+    forward 100
+    right   135
+    forward 20
+    right   45
+  ]
+end
+
+to fan
+  repeat 8 [
+    fanblade
+    left    135
+    forward 20
+  ]
+end
+
+fan
