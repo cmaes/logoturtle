@@ -55,7 +55,7 @@ prog:
 command_list: cmds = rev_command_list { List.rev cmds }
 rev_command_list:
   | c = command; { [c] }
-  | cmds = command_list; cmd = command; { cmd :: cmds }
+  | cmds = rev_command_list; single_cmd = command; { single_cmd :: cmds }
     ;
 
 expr:
