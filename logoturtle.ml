@@ -229,11 +229,6 @@ let rec eval state env inst =
                       then List.iter (eval state env) cmds
 
 
-let string_of_value = function
-  | Bool   b -> string_of_bool b
-  | Number n -> string_of_float n
-  | Var    name -> name
-
 (* prec  | operator  | operator
    level | character | name
    ==================================
