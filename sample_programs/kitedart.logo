@@ -1,0 +1,25 @@
+; Kite and Dart Tiles by Dr Adam Chalcraft
+; from http://drj11.github.io/curlylogo/gallery/
+
+to dart :x
+pd lt 36 fd :x rt 144 fd :x * 0.618033988 lt 36 fd :x * 0.618033988 rt 144 fd :x rt 144
+end
+to kite :x
+pd lt 36 fd :x rt 108 fd :x * 0.618033988 rt 36 fd :x * 0.618033988 rt 108 fd :x rt 144
+end
+to dartn :n :x
+if :n == 0 [dart :x stop]
+kiten :n - 1 :x * 0.618033988 lt 144 pu bk :x dartn :n - 1 :x * 0.618033988 pu fd :x rt 144
+end
+to lkiten :n :x
+lt 36 pu fd :x rt 144 kiten :n :x * 0.618033988 lt 144 pu bk :x rt 36
+end
+to rkiten :n :x
+rt 36 pu fd :x lt 144 kiten :n :x * 0.618033988 rt 144 pu bk :x lt 36
+end
+to kiten :n :x
+if :n == 0 [kite :x stop]
+lt 36 dartn :n - 1 :x * 0.618033988 rt 36 lkiten :n - 1 :x rkiten :n - 1 :x
+end
+;home
+pu rt 90 fd 250 lt 90 bk 1500 dartn 9 3000

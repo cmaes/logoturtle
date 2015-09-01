@@ -3,6 +3,13 @@
 
 to tree :level :size
    if :level > 0 [
+      setpensize :level/2
+      if :level < 3 [
+        setpencolor 10
+      ]
+      if :level >= 3 [
+        setpencolor 0
+      ]
       fd :size
       lt 10
       tree :level-1 :size*0.8
@@ -10,9 +17,16 @@ to tree :level :size
       rt 30
       tree :level-1 :size*0.8
       lt 30
-      ; pu
+      pu
       back :size
-      ; pd
+      pd
    ]
 end
-tree 13 40
+
+; this code just to put turtle at bottom
+pu
+back 200
+pd
+
+
+tree 13 60

@@ -1,0 +1,19 @@
+; Program from http://utdallas.edu/~veerasam/logo/
+
+to tree :level :size :turn
+  if :level > 0 [
+    fd :size
+    lt :turn
+    tree :level - 1 :size * 0.9 :turn - 3
+    rt  :turn
+    rt :turn
+    tree :level - 1 :size * 0.9 :turn - 3
+    lt :turn
+    pu bk :size pd
+  ]
+end
+
+pu
+back 200
+pd
+tree 12 40 25

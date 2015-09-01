@@ -29,6 +29,10 @@ type expr =
 
 type command =
   | Stop
+  | Pendown
+  | Penup
+  | Setpencolor of expr
+  | Setpensize  of expr
   | Forward of expr
   | Back    of expr
   | Right   of expr
@@ -83,11 +87,31 @@ module StringMap = Map.Make(String)
 type state = { mutable x: float;
                mutable y: float;
                mutable heading: float;
+               mutable pendown: bool;
                mutable cr: Cairo.context;
                mutable symbol_table: (bytes, param list * command list) Hashtbl.t }
 
 
 let pi = 4.0 *. atan(1.0);;
+
+type color = { r: float; g: float; b: float }
+
+let logocolors = [| { r = 0.; g =  0.; b =  0.}; (* black *)
+                    { r = 0.; g =  0.; b =  1.}; (* blue *)
+                    { r = 0.; g = 1.0; b = 0.};  (* green *)
+                    { r = 0.; g = 1.0; b = 1.0};  (* cyan *)
+                    { r = 1.0; g = 0.0; b = 0.0};  (* red *)
+                    { r = 1.; g = 0.; b = 1.};     (* magenta *)
+                    { r = 1.; g = 1.; b = 0.};     (* yellow *)
+                    { r = 0.; g = 0.; b = 0.};     (* white *)
+                    {r = 0.64705882352; g = 0.16470588235; b = 0.16470588235}; (* brown *)
+                    {r = 210. /. 255. ; g = 180. /. 255.; b = 140. /. 255. }; (* tan *)
+                    {r = 0.; g = 0.50196078431; b = 0.};  (* green *)
+                    {r = 0.49803921568; g = 1.0; b = 0.82745098039}; (* aqua *)
+                    {r = 0.98039215686; g = 0.50196078431; b = 0.44705882352}; (* salmon *)
+                    {r = 0.50196078431; g = 0.; b = 0.50196078431}; (* purple *)
+                    {r = 1.; g = 0.64705882352; b = 0.}; (* orange *)
+                    {r = 0.50196078431; g = 0.50196078431; b =0.50196078431} |] (* gray *)
 
 let create () = let surface = Cairo.Image.create Cairo.Image.ARGB32 800 800 in
                 let ctx = Cairo.create surface in
@@ -107,7 +131,7 @@ let create () = let surface = Cairo.Image.create Cairo.Image.ARGB32 800 800 in
                 Cairo.set_line_join ctx JOIN_MITER;
                 Cairo.set_line_cap ctx SQUARE;
                 Cairo.move_to ctx 0. 0.;
-                { x = 0.; y = 0.; heading = 0.; cr = ctx; symbol_table = table }
+                { x = 0.; y = 0.; heading = 0.; pendown = true; cr = ctx; symbol_table = table }
 
 let base_state = create ();;
 
@@ -118,7 +142,25 @@ let forward n state = let r = (state.heading *. pi /. 180.0) -. (pi /. 2.0) in
                       state.x <- state.x +. dx;
                       state.y <- state.y +. dy;
                       (* print_string ((string_of_float state.x) ^ " " ^ (string_of_float state.y) ^ "\n"); *)
-                      Cairo.line_to state.cr state.x state.y
+                      if state.pendown then
+                        Cairo.line_to state.cr state.x state.y
+                      else
+                        Cairo.move_to state.cr state.x state.y
+
+let penup   state = Cairo.stroke state.cr;
+                    state.pendown <- false
+let pendown state = state.pendown <- true
+let setpencolor n state = if (n >= 0 && n < 16) then
+                            let clr = logocolors.(n) in
+                            print_endline ("setting color " ^ (string_of_int n));
+                            Cairo.stroke state.cr;
+                            Cairo.set_source_rgb state.cr clr.r clr.g clr.b;
+                            Cairo.move_to state.cr state.x state.y
+                          else
+                            failwith "Invalid color specification"
+let setpensize size state = Cairo.stroke state.cr;
+                            Cairo.move_to state.cr state.x state.y;
+                            Cairo.set_line_width state.cr size
 
 
 let write_out state filename = let surface = Cairo.get_target state.cr in
@@ -204,7 +246,12 @@ exception StopException
 
 let rec eval state env inst =
   match inst with
-  | Stop -> raise (StopException)
+  | Stop        -> raise (StopException)
+  | Pendown     -> pendown state
+  | Penup       -> penup state
+  | Setpencolor exp -> setpencolor (int_of_float (float_of_value (eval_expr env exp)))
+                                state
+  | Setpensize exp  -> setpensize (float_of_value (eval_expr env exp)) state
   | Forward exp -> forward (float_of_value (eval_expr env exp)) state
   | Back    exp -> forward ~-.(float_of_value (eval_expr env exp)) state
   | Right   exp -> turn (float_of_value    (eval_expr env exp)) state
@@ -273,11 +320,15 @@ let string_of_expr e =
 
 let rec print_command cmd =
   match cmd with
-    | Stop      -> print_string "stop"
-    | Forward e -> print_string ("forward " ^ (string_of_expr e) ^ " ")
-    | Back    e -> print_string ("back " ^ (string_of_expr e ) ^ " ")
-    | Right   e -> print_string ("right " ^ (string_of_expr e) ^ " ")
-    | Left    e -> print_string ("left  " ^ (string_of_expr e) ^ " ")
+    | Stop          -> print_string "stop "
+    | Penup         -> print_string "penup "
+    | Pendown       -> print_string "pendown "
+    | Setpencolor e -> print_string ("setpencolor " ^ (string_of_expr e) ^ " ")
+    | Setpensize  e -> print_string ("setpensize " ^ (string_of_expr e) ^ " ")
+    | Forward e     -> print_string ("forward " ^ (string_of_expr e) ^ " ")
+    | Back    e     -> print_string ("back " ^ (string_of_expr e ) ^ " ")
+    | Right   e     -> print_string ("right " ^ (string_of_expr e) ^ " ")
+    | Left    e     -> print_string ("left  " ^ (string_of_expr e) ^ " ")
     | Repeat (e, cmd) ->
        print_string ("repeat " ^ (string_of_expr e) ^ " [ ");
        List.iter print_command cmd;

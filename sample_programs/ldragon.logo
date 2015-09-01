@@ -24,6 +24,7 @@ to rdragon :size :level
    rdragon :size :level - 1
 end
 ; we don't support the next command yet
-; cs setpw 1 pu fd 0.5 rt 90 fd 0.5 pd
+; cs setpw 1
+pu fd 0.5 rt 90 fd 0.5 pd
 
 ldragon 2 13

@@ -22,6 +22,10 @@
 %token GREATEREQUAL
 %token IF
 %token STOP
+%token PENUP
+%token PENDOWN
+%token SETPENCOLOR
+%token SETPENSIZE
 %token TO
 %token END
 %token FORWARD
@@ -91,7 +95,11 @@ boolean:
   ;
 
 command:
-  |  STOP  { Stop }
+  |  STOP               { Stop }
+  |  PENDOWN            { Pendown }
+  |  PENUP              { Penup }
+  |  SETPENCOLOR; e = expr { Setpencolor e }
+  |  SETPENSIZE; e = expr { Setpensize e }
   |  FORWARD; e = expr  { Forward e }
   |  BACK; e = expr     { Back e }
   |  RIGHT; e = expr    { Right e }

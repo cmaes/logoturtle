@@ -7,4 +7,13 @@ to fern :size :sign
   rt 7 * :sign fern :size - 1 :sign lt 7 * :sign
   bk :size * 2
 end
+
+;; this code just to start turtle off in lower left corner
+pu
+bk 200
+lt 90
+fd 100
+rt 90
+pd
+
 fern 25 1

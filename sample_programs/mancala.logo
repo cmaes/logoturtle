@@ -1,0 +1,3 @@
+; Samanid Mancala program taken from http://drj11.github.io/curlylogo/gallery/
+setpencolor 9 pu bk 100 pd setpensize 8
+repeat 7 [ fd 200 rt 360 * 1.5 / 7 fd 80 rt 360 * 1.5 / 7 ]
