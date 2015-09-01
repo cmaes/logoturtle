@@ -1,5 +1,13 @@
 all: run
 
+TEST_PROGRAMS := $(wildcard sample_programs/*.logo)
+TEST_GRAPHICS = $(TEST_PROGRAMS:.logo=.png)
+
+test: $(TEST_GRAPHICS)
+
+%.png: %.logo logo.native
+	./logo.native $<
+
 run: logo.native sample_programs/tree.logo
 	./logo.native sample_programs/tree.logo
 
@@ -14,5 +22,5 @@ graphics.png: logoturtle.byte
 	./logoturtle.byte
 
 clean:
-	-rm *.cmo *.cmi graphics.png *.byte *.native
+	-rm *.cmo *.cmi *.png *.byte *.native
 	-rm -rf _build/

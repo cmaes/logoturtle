@@ -121,9 +121,9 @@ let forward n state = let r = (state.heading *. pi /. 180.0) -. (pi /. 2.0) in
                       Cairo.line_to state.cr state.x state.y
 
 
-let write_out state = let surface = Cairo.get_target state.cr in
-                      Cairo.stroke state.cr;
-                      Cairo.PNG.write surface "graphics.png"
+let write_out state filename = let surface = Cairo.get_target state.cr in
+                               Cairo.stroke state.cr;
+                               Cairo.PNG.write surface filename
 
 
 (*let rec getValue env v =
@@ -308,11 +308,15 @@ let rec print_commands cmds =
 
 let eval_command command = let base_env = StringMap.empty in
                            eval base_state base_env command;
-                           write_out base_state
+                           write_out base_state "graphics.png"
 
 let eval_commands cmds = let base_env = StringMap.empty in
                          List.iter (eval base_state base_env) cmds;
-                         write_out base_state
+                         write_out base_state "graphics.png"
+
+let eval_commands_to_file cmds outfile = let base_env = StringMap.empty in
+                                         List.iter (eval base_state base_env) cmds;
+                                         write_out base_state outfile
 
 
 (*
