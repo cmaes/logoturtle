@@ -1,0 +1,7 @@
+; Tadpole Chaos program
+; from http://drj11.github.io/curlylogo/gallery/
+
+to inspin :side :angle :inc :n
+repeat :n [ fd :side rt :angle + :inc * repcount ]
+end
+inspin 2 2 3.14159265359  22222
