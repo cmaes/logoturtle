@@ -1,0 +1,2 @@
+; Moire by Yehuda Katz
+repeat 180 [fd 500 bk 500 rt 2]
