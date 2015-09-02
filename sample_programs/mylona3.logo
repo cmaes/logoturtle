@@ -1,0 +1,8 @@
+; Designs 1-5 program by Alex Mylonas' class
+; from http://www.mathcats.com/gallery/15wordcontest.html
+
+;repeat 36 [fd 60 rt 61 bk 80 lt 41 fd 85 rt 41]
+;repeat 16 [fd 85 lt 60 fd 107 bk 72 lt 53 fd 74]
+repeat 100 [fd 5 + repcount rt 45 fd 10 + repcount rt 60]
+;repeat 36 [repeat 36 [fd 10 rt 10] fd repcount rt 90 fd repcount]
+;repeat 18 [repeat 5 [rt 40 fd 100 rt 120] rt 20]
