@@ -1,0 +1,16 @@
+; Roses program by Paolo Passaro
+; from http://www.mathcats.com/gallery/fiverosedetails.html
+
+to roses :l :n :k
+; l is the step size
+; n is the number of roses
+; k is the order
+repeat 360 * :n [
+       fd :l
+       rt  repcount + ((2 * :k - :n) / ( 2 * :n))
+       ]
+end
+;roses 5 5 3
+;roses 5 7 3
+;roses 5 10 7
+roses 5 12 5

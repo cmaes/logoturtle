@@ -65,6 +65,7 @@ rule read =
   | "left"    { LEFT  }
   | "lt"      { LEFT  }
   | "repeat"  { REPEAT  }
+  | "repcount" { REPCOUNT }
   | '['       { LEFT_BRACKET }
   | ']'       { RIGHT_BRACKET }
   | '('       { LEFT_PAREN }

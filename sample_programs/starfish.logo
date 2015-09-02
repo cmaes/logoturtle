@@ -1,0 +1,5 @@
+; Starfish Program by Paolo Passaro and Julie Clune
+; from http://www.mathcats.com/gallery/15wordcontest.html
+; and http://www.mathcats.com/gallery/fiverosedetails.html
+
+repeat 1800 [fd 10 rt repcount + .1 ]

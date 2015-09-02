@@ -33,6 +33,7 @@
 %token LEFT
 %token RIGHT
 %token REPEAT
+%token REPCOUNT
 %token LEFT_BRACKET
 %token RIGHT_BRACKET
 %token LEFT_PAREN
@@ -68,6 +69,7 @@ expr:
   | b = boolean  { b }
 
 base:
+  | REPCOUNT                          { Var "repcount" }
   | p = PARAM                         { Var p }
   | b = BOOL                          { Bool b }
   | f = FLOAT                         { Number f }

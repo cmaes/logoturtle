@@ -1,0 +1,4 @@
+; Five Rose program by Paolo Passaro
+; from http://www.mathcats.com/gallery/fiverosedetails.html
+
+repeat 1800 [rt repcount fd 10 lt repcount fd 5 rt repcount rt .1]

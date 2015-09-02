@@ -259,7 +259,8 @@ let rec eval state env inst =
   | Repeat (exp, cmd) ->
      let n = int_of_float (float_of_value (eval_expr env exp)) in
      for i = 1 to n do
-       List.iter (eval state env) cmd
+       let extend_env = StringMap.add "repcount" (VFloat (float_of_int i)) env in
+       List.iter (eval state extend_env) cmd
      done
   | Proc (name, ps, cmds) -> Hashtbl.add state.symbol_table name (ps, cmds)
   | Call (name, args) ->

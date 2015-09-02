@@ -1,0 +1,4 @@
+; Ten Rose program by Paolo Passaro
+; from http://www.mathcats.com/gallery/fiverosedetails.html
+
+repeat 3600 [ fd 10 rt repcount + .2 ]
