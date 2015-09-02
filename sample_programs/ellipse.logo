@@ -1,0 +1,5 @@
+; Ellipse program by Paolo Passaro
+; from http://www.mathcats.com/gallery/15wordcontest.html
+; The eccentricity is e=0.5. If e = 0 you have a circle and if
+; e < 0 or e > 0 you have an ellipse horizontal or vertical
+repeat 360 [rt repcount fd 1 lt repcount * 2 fd 0.5 rt repcount]
