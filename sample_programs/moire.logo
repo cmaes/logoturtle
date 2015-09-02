@@ -1,2 +1,3 @@
 ; Moire by Yehuda Katz
+; from http://www.mathcats.com/gallery/15wordcontest.html
 repeat 180 [fd 500 bk 500 rt 2]
