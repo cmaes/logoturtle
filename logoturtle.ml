@@ -39,8 +39,19 @@ type command =
   | Left    of expr
   | Repeat  of expr * command list
   | Call    of name * expr list
-  | Proc    of name * param list * command list
+  | Procdef of name * param list * command list
   | If      of expr * command list
+
+type proc =
+  | PrimitiveProc of int * (value list -> state -> unit)
+  | UserProc      of param list * command list
+and
+  state = { mutable x: float;
+            mutable y: float;
+            mutable heading: float;
+            mutable pendown: bool;
+            mutable cr: Cairo.context;
+            mutable symbol_table: (bytes, proc) Hashtbl.t }
 
 exception ArgumentException of string
 
@@ -48,7 +59,7 @@ let square = Repeat ((Number 4.0),
                      [Forward (Number 1.0); Right (Number 90.)]);;
 let star   = Repeat ((Number 5.0),
                      [Forward (Number 1.0); Right (Number 144.)]);;
-let flower = [ Proc ("square", ["len"],
+let flower = [ Procdef ("square", ["len"],
                      [ Repeat ((Times (Number 2.0, Number 2.0)),
                                [(Forward (Var "len"));
                                 (Right   (Number 90.))])
@@ -58,7 +69,7 @@ let flower = [ Proc ("square", ["len"],
                          Call ("square", [(Number 0.4)])])
              ];;
 
-let tree = [ Proc ("tree", ["size"],
+let tree = [ Procdef ("tree", ["size"],
                    [ If ((Less (Var "size", Number 0.05)),
                          [ Forward (Var "size");
                            Back    (Var "size");
@@ -84,12 +95,6 @@ let tree = [ Proc ("tree", ["size"],
 
 module StringMap = Map.Make(String)
 
-type state = { mutable x: float;
-               mutable y: float;
-               mutable heading: float;
-               mutable pendown: bool;
-               mutable cr: Cairo.context;
-               mutable symbol_table: (bytes, param list * command list) Hashtbl.t }
 
 
 let pi = 4.0 *. atan(1.0);;
@@ -112,28 +117,6 @@ let logocolors = [| { r = 0.; g =  0.; b =  0.}; (* black *)
                     {r = 0.50196078431; g = 0.; b = 0.50196078431}; (* purple *)
                     {r = 1.; g = 0.64705882352; b = 0.}; (* orange *)
                     {r = 0.50196078431; g = 0.50196078431; b =0.50196078431} |] (* gray *)
-
-let create () = let surface = Cairo.Image.create Cairo.Image.ARGB32 800 800 in
-                let ctx = Cairo.create surface in
-                let table = Hashtbl.create 100 in
-                (* paint background white *)
-                Cairo.rectangle ctx 0.0 0.0 800. 800.;
-                Cairo.set_source_rgb ctx 1.0 1.0 1.0;
-                Cairo.fill ctx;
-
-                (* setup turtle coordinates *)
-                Cairo.translate ctx 400. 400.;
-                Cairo.scale ctx 2. 2.;
-
-                (* setup turtle line properties *)
-                Cairo.set_line_width ctx 1.0;
-                Cairo.set_source_rgb ctx 0. 0. 0.;
-                Cairo.set_line_join ctx JOIN_MITER;
-                Cairo.set_line_cap ctx SQUARE;
-                Cairo.move_to ctx 0. 0.;
-                { x = 0.; y = 0.; heading = 0.; pendown = true; cr = ctx; symbol_table = table }
-
-let base_state = create ();;
 
 let turn n state = state.heading <- state.heading +. n
 let forward n state = let r = (state.heading *. pi /. 180.0) -. (pi /. 2.0) in
@@ -161,6 +144,80 @@ let setpencolor n state = if (n >= 0 && n < 16) then
 let setpensize size state = Cairo.stroke state.cr;
                             Cairo.move_to state.cr state.x state.y;
                             Cairo.set_line_width state.cr size
+
+let home lst state = match lst with
+  | [] -> Cairo.stroke state.cr;
+          state.x <- 0.;
+          state.y <- 0.;
+          state.heading <- 0.;
+          Cairo.move_to state.cr state.x state.y
+  | _ -> failwith "home expected no arguments"
+
+let domove state = if state.pendown then
+                     Cairo.line_to state.cr state.x state.y
+                   else
+                     Cairo.move_to state.cr state.x state.y
+
+let seth lst state = match lst with
+  | [ VFloat angle ] -> state.heading <- angle
+  | _ -> failwith "seth expected one numeric argument"
+
+let setx lst state = match lst with
+  | [ VFloat x ] -> print_endline ("got setx:" ^ (string_of_float x));
+                    state.x <- x;
+                    domove state
+  | _ -> failwith "setx expected one numeric argument"
+
+let sety lst state = match lst with
+  | [ VFloat y ] -> print_endline ("got sety:" ^ (string_of_float y));
+                    state.y <- ~-.y;
+                    domove state
+  | _ -> failwith "sety expected one numeric argument"
+
+let setxy lst state = match lst with
+  | VFloat x :: VFloat y :: [] -> print_endline ("got setxy:" ^ (string_of_float x) ^ " " ^ (string_of_float y));
+                                  state.x <- x;
+                                  state.y <- ~-.y;
+                                  domove state
+  | _ -> failwith "setxy expected two numeric arguments"
+
+let create procs names =
+  let surface = Cairo.Image.create Cairo.Image.ARGB32 800 800 in
+  let ctx = Cairo.create surface in
+  let table = Hashtbl.create 100 in
+  (* paint background white *)
+  Cairo.rectangle ctx 0.0 0.0 800. 800.;
+  Cairo.set_source_rgb ctx 1.0 1.0 1.0;
+  Cairo.fill ctx;
+
+  (* setup turtle coordinates *)
+  Cairo.translate ctx 400. 400.;
+  Cairo.scale ctx 2. 2.;
+
+  (* setup turtle line properties *)
+  Cairo.set_line_width ctx 1.0;
+  Cairo.set_source_rgb ctx 0. 0. 0.;
+  Cairo.set_line_join ctx JOIN_MITER;
+  Cairo.set_line_cap ctx SQUARE;
+  Cairo.move_to ctx 0. 0.;
+
+  (* add primitive procedures to hash table *)
+  List.iter2 (fun name proc -> Hashtbl.add table name proc) names procs;
+
+  { x = 0.; y = 0.; heading = 0.; pendown = true; cr = ctx; symbol_table = table }
+
+let base_state = create [PrimitiveProc (0, home);
+                         PrimitiveProc (1, seth);
+                         PrimitiveProc (1, seth);
+                         PrimitiveProc (1, setx);
+                         PrimitiveProc (1, sety);
+                         PrimitiveProc (2, setxy)]
+                        ["home";
+                         "seth";
+                         "setheading";
+                         "setx";
+                         "sety";
+                         "setxy"];;
 
 
 let write_out state filename = let surface = Cairo.get_target state.cr in
@@ -262,17 +319,25 @@ let rec eval state env inst =
        let extend_env = StringMap.add "repcount" (VFloat (float_of_int i)) env in
        List.iter (eval state extend_env) cmd
      done
-  | Proc (name, ps, cmds) -> Hashtbl.add state.symbol_table name (ps, cmds)
+  | Procdef (name, ps, cmds) -> Hashtbl.add state.symbol_table name (UserProc (ps, cmds))
   | Call (name, args) ->
-     let ps, cmds = Hashtbl.find state.symbol_table name in
-     if List.length ps <> List.length args then
-       raise (ArgumentException "argument count mistmatch")
-     else
-       let extend_env = List.fold_left2
-                          (fun env key exp -> StringMap.add key (eval_expr env exp) env)
-                          env ps args in
-       (try List.iter (eval state extend_env) cmds with
-        | StopException -> ())
+     let procedure  = Hashtbl.find state.symbol_table name in
+     (match procedure with
+       | UserProc (ps, cmds) -> (
+         if List.length ps <> List.length args then
+           raise (ArgumentException "argument count mismatch")
+         else
+           let extend_env = List.fold_left2
+                              (fun env key exp -> StringMap.add key (eval_expr env exp) env)
+                              env ps args in
+           (try List.iter (eval state extend_env) cmds with
+            | StopException -> ())
+       )
+       | PrimitiveProc (n, primproc) -> if n <> List.length args then
+                                          raise (ArgumentException "argument count mismatch")
+                                        else
+                                          primproc (List.map (eval_expr env) args) state
+     )
   | If (exp, cmds) -> if (bool_of_value (eval_expr env exp))
                       then List.iter (eval state env) cmds
 
@@ -336,7 +401,7 @@ let rec print_command cmd =
        print_string " ] "
     | Call (name, args) ->
        print_string (name ^ " " ^ (String.concat  " " (List.map string_of_expr args)) ^ " ")
-    | Proc (name, params, cmds) ->
+    | Procdef (name, params, cmds) ->
        print_string ("to " ^ name ^
                        (String.concat " " (List.map (fun x -> ":" ^ x) params))
                          ^ "\n");

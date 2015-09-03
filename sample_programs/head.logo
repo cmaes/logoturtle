@@ -1,0 +1,8 @@
+; Head program by Keith Enevoldsen
+; from http://www.mathcats.com/gallery/15wordcontest.html
+
+repeat 38 [fd 5 rt 10]
+setx 55
+setx 27
+setxy 20 0-10
+setx 27

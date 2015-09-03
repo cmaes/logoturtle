@@ -108,7 +108,7 @@ command:
   |  LEFT; e = expr     { Left  e }
   |  REPEAT; e = expr; LEFT_BRACKET; cmds = command_fields; RIGHT_BRACKET { Repeat (e, cmds) }
   |  name = ID; args = args_list; { Call (name, args) }
-  |  TO; name = ID; params = params_list; cmds = command_fields; END { Proc (name, params, cmds) }
+  |  TO; name = ID; params = params_list; cmds = command_fields; END { Procdef (name, params, cmds) }
   |  IF; e = expr; LEFT_BRACKET; cmds = command_fields; RIGHT_BRACKET { If (e, cmds) }
   ;
 
