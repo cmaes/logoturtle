@@ -48,12 +48,6 @@ rule read =
   | ">="      { GREATEREQUAL }
   | "if"      { IF }
   | "stop"    { STOP }
-  | "pendown" { PENDOWN }
-  | "pd"      { PENDOWN }
-  | "penup"   { PENUP }
-  | "pu"      { PENUP }
-  | "setpencolor" { SETPENCOLOR }
-  | "setpensize"  { SETPENSIZE }
   | "to"      { TO }
   | "end"     { END }
   | "forward" { FORWARD }

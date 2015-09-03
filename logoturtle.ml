@@ -29,10 +29,6 @@ type expr =
 
 type command =
   | Stop
-  | Pendown
-  | Penup
-  | Setpencolor of expr
-  | Setpensize  of expr
   | Forward of expr
   | Back    of expr
   | Right   of expr
@@ -119,31 +115,46 @@ let logocolors = [| { r = 0.; g =  0.; b =  0.}; (* black *)
                     {r = 0.50196078431; g = 0.50196078431; b =0.50196078431} |] (* gray *)
 
 let turn n state = state.heading <- state.heading +. n
+
+let domove state = if state.pendown then
+                     Cairo.line_to state.cr state.x state.y
+                   else
+                     Cairo.move_to state.cr state.x state.y
+
 let forward n state = let r = (state.heading *. pi /. 180.0) -. (pi /. 2.0) in
                       let dx = n *. cos(r) in
                       let dy = n *. sin(r) in
                       state.x <- state.x +. dx;
                       state.y <- state.y +. dy;
                       (* print_string ((string_of_float state.x) ^ " " ^ (string_of_float state.y) ^ "\n"); *)
-                      if state.pendown then
-                        Cairo.line_to state.cr state.x state.y
-                      else
-                        Cairo.move_to state.cr state.x state.y
+                      domove state
 
-let penup   state = Cairo.stroke state.cr;
-                    state.pendown <- false
-let pendown state = state.pendown <- true
-let setpencolor n state = if (n >= 0 && n < 16) then
-                            let clr = logocolors.(n) in
-                            print_endline ("setting color " ^ (string_of_int n));
-                            Cairo.stroke state.cr;
-                            Cairo.set_source_rgb state.cr clr.r clr.g clr.b;
-                            Cairo.move_to state.cr state.x state.y
-                          else
-                            failwith "Invalid color specification"
-let setpensize size state = Cairo.stroke state.cr;
-                            Cairo.move_to state.cr state.x state.y;
-                            Cairo.set_line_width state.cr size
+(* primitive procedures *)
+
+let penup lst state = match lst with
+    | [] -> Cairo.stroke state.cr;
+            state.pendown <- false
+    | _ -> failwith "penup expected no arguments"
+let pendown lst state = match lst with
+    | [] -> state.pendown <- true
+    | _ -> failwith "pendown expected no arguments"
+
+let setpencolor lst state = match lst with
+    | [VFloat nfloat] -> let n = (int_of_float nfloat) in
+                         if (n >= 0 && n < 16) then
+                           let clr = logocolors.(n) in
+                           print_endline ("setting color " ^ (string_of_int n));
+                           Cairo.stroke state.cr;
+                           Cairo.set_source_rgb state.cr clr.r clr.g clr.b;
+                           Cairo.move_to state.cr state.x state.y
+                         else
+                           failwith "Invalid color specification"
+    | _ -> failwith "setpencolor expected one numeric argument"
+let setpensize lst state = match lst with
+    | [VFloat size] -> Cairo.stroke state.cr;
+                       Cairo.move_to state.cr state.x state.y;
+                       Cairo.set_line_width state.cr size
+    | _ -> failwith "setpensize expected one numeric argument"
 
 let home lst state = match lst with
   | [] -> Cairo.stroke state.cr;
@@ -152,11 +163,6 @@ let home lst state = match lst with
           state.heading <- 0.;
           Cairo.move_to state.cr state.x state.y
   | _ -> failwith "home expected no arguments"
-
-let domove state = if state.pendown then
-                     Cairo.line_to state.cr state.x state.y
-                   else
-                     Cairo.move_to state.cr state.x state.y
 
 let seth lst state = match lst with
   | [ VFloat angle ] -> state.heading <- angle
@@ -206,13 +212,25 @@ let create procs names =
 
   { x = 0.; y = 0.; heading = 0.; pendown = true; cr = ctx; symbol_table = table }
 
-let base_state = create [PrimitiveProc (0, home);
+let base_state = create [PrimitiveProc (0, penup);
+                         PrimitiveProc (0, penup);
+                         PrimitiveProc (0, pendown);
+                         PrimitiveProc (0, pendown);
+                         PrimitiveProc (1, setpencolor);
+                         PrimitiveProc (1, setpensize);
+                         PrimitiveProc (0, home);
                          PrimitiveProc (1, seth);
                          PrimitiveProc (1, seth);
                          PrimitiveProc (1, setx);
                          PrimitiveProc (1, sety);
                          PrimitiveProc (2, setxy)]
-                        ["home";
+                        ["penup";
+                         "pu";
+                         "pendown";
+                         "pd";
+                         "setpencolor";
+                         "setpensize";
+                         "home";
                          "seth";
                          "setheading";
                          "setx";
@@ -304,11 +322,6 @@ exception StopException
 let rec eval state env inst =
   match inst with
   | Stop        -> raise (StopException)
-  | Pendown     -> pendown state
-  | Penup       -> penup state
-  | Setpencolor exp -> setpencolor (int_of_float (float_of_value (eval_expr env exp)))
-                                state
-  | Setpensize exp  -> setpensize (float_of_value (eval_expr env exp)) state
   | Forward exp -> forward (float_of_value (eval_expr env exp)) state
   | Back    exp -> forward ~-.(float_of_value (eval_expr env exp)) state
   | Right   exp -> turn (float_of_value    (eval_expr env exp)) state
@@ -387,10 +400,6 @@ let string_of_expr e =
 let rec print_command cmd =
   match cmd with
     | Stop          -> print_string "stop "
-    | Penup         -> print_string "penup "
-    | Pendown       -> print_string "pendown "
-    | Setpencolor e -> print_string ("setpencolor " ^ (string_of_expr e) ^ " ")
-    | Setpensize  e -> print_string ("setpensize " ^ (string_of_expr e) ^ " ")
     | Forward e     -> print_string ("forward " ^ (string_of_expr e) ^ " ")
     | Back    e     -> print_string ("back " ^ (string_of_expr e ) ^ " ")
     | Right   e     -> print_string ("right " ^ (string_of_expr e) ^ " ")
