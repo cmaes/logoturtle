@@ -30,6 +30,12 @@
 %token RIGHT
 %token REPEAT
 %token REPCOUNT
+%token SIN
+%token COS
+%token POWER
+%token EXP
+%token LN
+%token RANDOM
 %token LEFT_BRACKET
 %token RIGHT_BRACKET
 %token LEFT_PAREN
@@ -39,6 +45,7 @@
 %start <Logoturtle.command list> prog
 
 (* the order of the following is important to define precedence *)
+%nonassoc SIN COS POWER EXP LN RANDOM
 %left OR
 %left AND
 %nonassoc NOT
@@ -63,6 +70,7 @@ expr:
   | b = base     { b }
   | a = arith    { a }
   | b = boolean  { b }
+  | ap = app     { ap }
 
 base:
   | REPCOUNT                          { Var "repcount" }
@@ -91,6 +99,15 @@ boolean:
   | e1 = expr; OR;           e2 = expr { Or (e1, e2) }
   | e1 = expr; AND;          e2 = expr { And (e1, e2 ) }
   ;
+
+app:
+  | SIN; e = expr                { UnaryFunc  ("sin", e) }
+  | COS; e = expr                { UnaryFunc  ("cos", e) }
+  | EXP; e = expr                { UnaryFunc  ("exp", e) }
+  | LN;  e = expr                { UnaryFunc  ("ln", e)  }
+  | RANDOM; e = expr             { UnaryFunc  ("random", e) }
+  | POWER; e1 = expr; e2 = expr  { BinaryFunc ("power", e1, e2) }
+
 
 command:
   |  STOP               { Stop }

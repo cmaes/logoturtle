@@ -1,0 +1,4 @@
+; Brownian Motion by Erez Katz
+; from http://www.mathcats.com/gallery/15wordcontest.html
+
+repeat 10000 [fd 3 * ((-1) + random 2) rt 90 * random 4]

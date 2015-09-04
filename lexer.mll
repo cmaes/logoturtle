@@ -60,6 +60,12 @@ rule read =
   | "lt"      { LEFT  }
   | "repeat"  { REPEAT  }
   | "repcount" { REPCOUNT }
+  | "sin"     { SIN }
+  | "cos"     { COS }
+  | "power"   { POWER }
+  | "exp"     { EXP }
+  | "ln"      { LN }
+  | "random"  { RANDOM }
   | '['       { LEFT_BRACKET }
   | ']'       { RIGHT_BRACKET }
   | '('       { LEFT_PAREN }

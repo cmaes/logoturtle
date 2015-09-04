@@ -1,0 +1,2 @@
+; Rose variation 1 by Keith Enevoldsen
+repeat 180 [seth repcount fd 200 * sin repcount*7 home]

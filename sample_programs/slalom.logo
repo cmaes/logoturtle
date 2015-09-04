@@ -1,0 +1,6 @@
+; Slalom Scrolls
+
+repeat 2000 [
+       fd 5
+       rt (90 * sin repcount)
+]

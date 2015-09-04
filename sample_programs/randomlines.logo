@@ -1,0 +1,4 @@
+; From http://utdallas.edu/~veerasam/logo/
+
+setpensize 5
+repeat 30 [setpencolor random 16 fd random 200 rt 90]

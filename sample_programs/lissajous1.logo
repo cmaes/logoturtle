@@ -1,0 +1,3 @@
+; Lissajous variation 1 by Samuel Kilchenmann
+
+repeat 360 [setxy (sin(2 * repcount)) * 150 (sin(3 * repcount)) * 150]

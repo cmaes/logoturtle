@@ -1,0 +1,16 @@
+; Random squares from
+; http://utdallas.edu/~veerasam/logo/
+
+to sq :size
+   repeat 4 [
+          fd :size
+          rt 90
+          ]
+end
+
+repeat 20 [
+  setpencolor random 16
+  setpensize random 5
+  sq random 200
+  rt random 360
+]

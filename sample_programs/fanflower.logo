@@ -1,0 +1,6 @@
+; Fan Flower by Keith Enevoldsen
+
+pu
+fd 100
+pd
+repeat 12 [repeat 75 [fd 100 bk 100 rt 2] fd 250]

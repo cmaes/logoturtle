@@ -9,23 +9,30 @@ type value =
   | VFloat of float
 
 type expr =
-  | Var       of param
-  | Bool      of bool
-  | Number    of float
-  | Plus      of expr * expr
-  | Minus     of expr * expr
-  | Times     of expr * expr
-  | Divide    of expr * expr
-  | Negate    of expr
-  | Or        of expr * expr
-  | And       of expr * expr
-  | Not       of expr
-  | Less      of expr * expr
-  | Greater   of expr * expr
-  | Equal     of expr * expr
-  | NEqual    of expr * expr
-  | LessEq    of expr * expr
-  | GreaterEq of expr * expr
+  | Var        of param
+  | Bool       of bool
+  | Number     of float
+  | UnaryFunc  of param * expr
+  | BinaryFunc of param * expr * expr
+  | Plus       of expr * expr
+  | Minus      of expr * expr
+  | Times      of expr * expr
+  | Divide     of expr * expr
+  | Negate     of expr
+  | Or         of expr * expr
+  | And        of expr * expr
+  | Not        of expr
+  | Less       of expr * expr
+  | Greater    of expr * expr
+  | Equal      of expr * expr
+  | NEqual     of expr * expr
+  | LessEq     of expr * expr
+  | GreaterEq  of expr * expr
+
+type mapvalue =
+  | Val       of value
+  | UnaryVal  of (value -> value)
+  | BinaryVal of (value -> value -> value)
 
 type command =
   | Stop
@@ -143,7 +150,6 @@ let setpencolor lst state = match lst with
     | [VFloat nfloat] -> let n = (int_of_float nfloat) in
                          if (n >= 0 && n < 16) then
                            let clr = logocolors.(n) in
-                           print_endline ("setting color " ^ (string_of_int n));
                            Cairo.stroke state.cr;
                            Cairo.set_source_rgb state.cr clr.r clr.g clr.b;
                            Cairo.move_to state.cr state.x state.y
@@ -169,20 +175,17 @@ let seth lst state = match lst with
   | _ -> failwith "seth expected one numeric argument"
 
 let setx lst state = match lst with
-  | [ VFloat x ] -> print_endline ("got setx:" ^ (string_of_float x));
-                    state.x <- x;
+  | [ VFloat x ] -> state.x <- x;
                     domove state
   | _ -> failwith "setx expected one numeric argument"
 
 let sety lst state = match lst with
-  | [ VFloat y ] -> print_endline ("got sety:" ^ (string_of_float y));
-                    state.y <- ~-.y;
+  | [ VFloat y ] -> state.y <- ~-.y;
                     domove state
   | _ -> failwith "sety expected one numeric argument"
 
 let setxy lst state = match lst with
-  | VFloat x :: VFloat y :: [] -> print_endline ("got setxy:" ^ (string_of_float x) ^ " " ^ (string_of_float y));
-                                  state.x <- x;
+  | VFloat x :: VFloat y :: [] -> state.x <- x;
                                   state.y <- ~-.y;
                                   domove state
   | _ -> failwith "setxy expected two numeric arguments"
@@ -242,6 +245,33 @@ let write_out state filename = let surface = Cairo.get_target state.cr in
                                Cairo.stroke state.cr;
                                Cairo.PNG.write surface filename
 
+(* primitive functions *)
+
+let unary_float_value name g = UnaryVal
+                                 (function
+                                   | VFloat f ->
+                                      let c = (g f) in
+                                      (* print_endline (name ^ ":" ^ (string_of_float f) ^ "=" ^
+                                                       (string_of_float c)); *)
+                                      VFloat c
+                                   | VBool b -> failwith (name ^ " expected number"))
+
+
+let sin_val = unary_float_value "sin" (fun deg -> sin (deg *. pi /. 180.))
+let cos_val = unary_float_value "cos" (fun deg -> cos (deg *. pi /. 180.))
+let exp_val = unary_float_value "exp" exp
+let ln_val  = unary_float_value "ln" log
+let rand_val = unary_float_value "random" (fun flt -> float_of_int (Random.int (int_of_float flt)))
+let power_val = BinaryVal (fun base exp -> match (base, exp) with
+                                           | (VFloat a, VFloat n) -> VFloat (a ** n)
+                                           | _, _ -> failwith "power expected two numeric arguments")
+
+let create_base_env funcs names = let empty = StringMap.empty in
+                                  List.fold_left2 (fun env key func -> StringMap.add key func env)
+                                                  empty names funcs
+
+let base_env = create_base_env [sin_val; cos_val; exp_val; ln_val; power_val; rand_val]
+                               ["sin";   "cos";   "exp";   "ln";  "power";   "random" ]
 
 (*let rec getValue env v =
   match v with
@@ -262,10 +292,26 @@ let bool_of_value = function
   | VBool b -> b
   | VFloat f -> failwith "Boolean expected"
 
+let value_of_mapval = function
+  | Val v -> v
+  | _ -> failwith "Value expected"
+
+let unaryval_of_mapval = function
+  | UnaryVal v -> v
+  | _ -> failwith "Function of 1 argument expected"
+
+let binaryval_of_mapval = function
+  | BinaryVal v -> v
+  | _ -> failwith "Function of 2 arguments expected"
+
 let rec eval_expr env = function
-  | Var name           -> (StringMap.find name env)
+  | Var name           -> value_of_mapval (StringMap.find name env)
   | Bool b             -> VBool  b
   | Number n           -> VFloat n
+  | UnaryFunc (name, e) -> let myfunc = unaryval_of_mapval (StringMap.find name env) in
+                           myfunc (eval_expr env e)
+  | BinaryFunc (name,e1, e2) -> let myfunc = binaryval_of_mapval (StringMap.find name env) in
+                                myfunc (eval_expr env e1) (eval_expr env e2)
   | Plus  (e1, e2)     -> (match (eval_expr env e1),  (eval_expr env e2) with
                            | VFloat a, VFloat b -> VFloat (a +. b)
                            | _,_ -> failwith "Numbers expected in addition")
@@ -329,7 +375,7 @@ let rec eval state env inst =
   | Repeat (exp, cmd) ->
      let n = int_of_float (float_of_value (eval_expr env exp)) in
      for i = 1 to n do
-       let extend_env = StringMap.add "repcount" (VFloat (float_of_int i)) env in
+       let extend_env = StringMap.add "repcount" (Val (VFloat (float_of_int i))) env in
        List.iter (eval state extend_env) cmd
      done
   | Procdef (name, ps, cmds) -> Hashtbl.add state.symbol_table name (UserProc (ps, cmds))
@@ -341,7 +387,7 @@ let rec eval state env inst =
            raise (ArgumentException "argument count mismatch")
          else
            let extend_env = List.fold_left2
-                              (fun env key exp -> StringMap.add key (eval_expr env exp) env)
+                              (fun env key exp -> StringMap.add key (Val (eval_expr env exp)) env)
                               env ps args in
            (try List.iter (eval state extend_env) cmds with
             | StopException -> ())
@@ -378,6 +424,8 @@ let string_of_expr e =
       | Var name           -> (7, name)
       | Number n           -> (7, string_of_float n)
       | Bool  b            -> (7, string_of_bool b)
+      | UnaryFunc (name, e) -> (7, name ^ "(" ^ (to_str 0 e) ^ ")")
+      | BinaryFunc (name, e1, e2) -> (7, name ^ "(" ^ (to_str 0 e1) ^ " , " ^ (to_str 0 e2) ^ ")")
       | Negate e           -> (6, "-" ^ (to_str 0 e))
       | Not   b            -> (6, "!" ^ (to_str 0 b))
       | Times     (e1, e2) -> (5, (to_str 5 e1) ^ " * " ^ (to_str 6 e2))
@@ -427,16 +475,13 @@ let rec print_commands cmds =
     | h :: t -> print_command h; print_commands t
 
 
-let eval_command command = let base_env = StringMap.empty in
-                           eval base_state base_env command;
+let eval_command command = eval base_state base_env command;
                            write_out base_state "graphics.png"
 
-let eval_commands cmds = let base_env = StringMap.empty in
-                         List.iter (eval base_state base_env) cmds;
+let eval_commands cmds = List.iter (eval base_state base_env) cmds;
                          write_out base_state "graphics.png"
 
-let eval_commands_to_file cmds outfile = let base_env = StringMap.empty in
-                                         List.iter (eval base_state base_env) cmds;
+let eval_commands_to_file cmds outfile = List.iter (eval base_state base_env) cmds;
                                          write_out base_state outfile
 
 

@@ -1,0 +1,3 @@
+; Eye by Paolo Passaro
+
+repeat 1800 [fd ln repcount bk 10*sin repcount rt 10]
