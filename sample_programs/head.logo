@@ -4,5 +4,5 @@
 repeat 38 [fd 5 rt 10]
 setx 55
 setx 27
-setxy 20 0-10
+setxy 20 (-10)
 setx 27

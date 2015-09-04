@@ -77,7 +77,7 @@ arith:
   | e1 = expr; MINUS;  e2 = expr  { Minus (e1, e2)  }
   | e1 = expr; TIMES;  e2 = expr  { Times (e1, e2)  }
   | e1 = expr; DIVIDE; e2 = expr  { Divide (e1, e2) }
-  | MINUS; e = expr               { Negate e        } %prec TIMES
+  | LEFT_PAREN; MINUS; e = expr; RIGHT_PAREN { Negate e }
   ;
 
 boolean:
