@@ -1,4 +1,4 @@
-open Cairo
+open Turtlegraphics
 
 type iter = int
 type name = string
@@ -53,7 +53,7 @@ and
             mutable y: float;
             mutable heading: float;
             mutable pendown: bool;
-            mutable cr: Cairo.context;
+            mutable cr: Turtlegraphics.turtlecontext;
             mutable symbol_table: (bytes, proc) Hashtbl.t }
 
 exception ArgumentException of string
@@ -124,9 +124,9 @@ let logocolors = [| { r = 0.; g =  0.; b =  0.}; (* black *)
 let turn n state = state.heading <- state.heading +. n
 
 let domove state = if state.pendown then
-                     Cairo.line_to state.cr state.x state.y
+                     Turtlegraphics.line_to state.cr state.x state.y
                    else
-                     Cairo.move_to state.cr state.x state.y
+                     Turtlegraphics.move_to state.cr state.x state.y
 
 let forward n state = let r = (state.heading *. pi /. 180.0) -. (pi /. 2.0) in
                       let dx = n *. cos(r) in
@@ -139,7 +139,7 @@ let forward n state = let r = (state.heading *. pi /. 180.0) -. (pi /. 2.0) in
 (* primitive procedures *)
 
 let penup lst state = match lst with
-    | [] -> Cairo.stroke state.cr;
+    | [] -> Turtlegraphics.stroke state.cr;
             state.pendown <- false
     | _ -> failwith "penup expected no arguments"
 let pendown lst state = match lst with
@@ -150,24 +150,24 @@ let setpencolor lst state = match lst with
     | [VFloat nfloat] -> let n = (int_of_float nfloat) in
                          if (n >= 0 && n < 16) then
                            let clr = logocolors.(n) in
-                           Cairo.stroke state.cr;
-                           Cairo.set_source_rgb state.cr clr.r clr.g clr.b;
-                           Cairo.move_to state.cr state.x state.y
+                           Turtlegraphics.stroke state.cr;
+                           Turtlegraphics.set_source_rgb state.cr clr.r clr.g clr.b;
+                           Turtlegraphics.move_to state.cr state.x state.y
                          else
                            failwith "Invalid color specification"
     | _ -> failwith "setpencolor expected one numeric argument"
 let setpensize lst state = match lst with
-    | [VFloat size] -> Cairo.stroke state.cr;
-                       Cairo.move_to state.cr state.x state.y;
-                       Cairo.set_line_width state.cr size
+    | [VFloat size] -> Turtlegraphics.stroke state.cr;
+                       Turtlegraphics.move_to state.cr state.x state.y;
+                       Turtlegraphics.set_line_width state.cr size
     | _ -> failwith "setpensize expected one numeric argument"
 
 let home lst state = match lst with
-  | [] -> Cairo.stroke state.cr;
+  | [] -> Turtlegraphics.stroke state.cr;
           state.x <- 0.;
           state.y <- 0.;
           state.heading <- 0.;
-          Cairo.move_to state.cr state.x state.y
+          Turtlegraphics.move_to state.cr state.x state.y
   | _ -> failwith "home expected no arguments"
 
 let seth lst state = match lst with
@@ -191,24 +191,8 @@ let setxy lst state = match lst with
   | _ -> failwith "setxy expected two numeric arguments"
 
 let create procs names =
-  let surface = Cairo.Image.create Cairo.Image.ARGB32 800 800 in
-  let ctx = Cairo.create surface in
+  let ctx = Turtlegraphics.create_context 800 800 in
   let table = Hashtbl.create 100 in
-  (* paint background white *)
-  Cairo.rectangle ctx 0.0 0.0 800. 800.;
-  Cairo.set_source_rgb ctx 1.0 1.0 1.0;
-  Cairo.fill ctx;
-
-  (* setup turtle coordinates *)
-  Cairo.translate ctx 400. 400.;
-  Cairo.scale ctx 2. 2.;
-
-  (* setup turtle line properties *)
-  Cairo.set_line_width ctx 1.0;
-  Cairo.set_source_rgb ctx 0. 0. 0.;
-  Cairo.set_line_join ctx JOIN_MITER;
-  Cairo.set_line_cap ctx SQUARE;
-  Cairo.move_to ctx 0. 0.;
 
   (* add primitive procedures to hash table *)
   List.iter2 (fun name proc -> Hashtbl.add table name proc) names procs;
@@ -241,9 +225,7 @@ let base_state = create [PrimitiveProc (0, penup);
                          "setxy"];;
 
 
-let write_out state filename = let surface = Cairo.get_target state.cr in
-                               Cairo.stroke state.cr;
-                               Cairo.PNG.write surface filename
+let write_out state filename = Turtlegraphics.write_out state.cr filename
 
 (* primitive functions *)
 

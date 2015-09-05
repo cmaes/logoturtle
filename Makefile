@@ -11,7 +11,7 @@ test: $(TEST_GRAPHICS)
 run: logo.native sample_programs/tree.logo
 	./logo.native sample_programs/tree.logo
 
-logo.native: logo.ml logoturtle.ml parser.mly lexer.mll
+logo.native: logo.ml logoturtle.ml turtlegraphics.ml parser.mly lexer.mll
 	ocamlbuild -use-menhir -tag thread -use-ocamlfind -quiet -pkg core -pkg cairo2 $@
 
 logoturtle.byte: logoturtle.ml
