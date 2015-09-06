@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+          "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Logo Interpreter</title>
+    <script type="text/javascript" src="logoweb.js"></script>
+    <script>
+      function send_to_ocaml() {
+      var ipt = document.getElementById('myinput');
+      var val = ipt.value;
+      console.log('In js', val);
+      interpetLOGO(val);
+      }
+</script>
+  </head>
+  <body>
+    <input id="myinput"> </input>
+    <button id="go" onclick="send_to_ocaml()">Go</button>
+  </body>
+</html>

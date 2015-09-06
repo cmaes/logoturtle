@@ -1,5 +1,3 @@
-open Turtlegraphics
-
 type iter = int
 type name = string
 type param = string
@@ -55,6 +53,7 @@ and
             mutable pendown: bool;
             mutable cr: Turtlegraphics.turtlecontext;
             mutable symbol_table: (bytes, proc) Hashtbl.t }
+
 
 exception ArgumentException of string
 
@@ -465,6 +464,9 @@ let eval_commands cmds = List.iter (eval base_state base_env) cmds;
 
 let eval_commands_to_file cmds outfile = List.iter (eval base_state base_env) cmds;
                                          write_out base_state outfile
+let eval_commands_return_ctx cmds = List.iter (eval base_state base_env) cmds;
+                                    write_out base_state "dummy.png";
+                                    base_state.cr
 
 
 (*
