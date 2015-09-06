@@ -464,9 +464,15 @@ let eval_commands cmds = List.iter (eval base_state base_env) cmds;
 
 let eval_commands_to_file cmds outfile = List.iter (eval base_state base_env) cmds;
                                          write_out base_state outfile
-let eval_commands_return_ctx cmds = List.iter (eval base_state base_env) cmds;
-                                    write_out base_state "dummy.png";
-                                    base_state.cr
+
+let create_state  = base_state
+
+let eval_commands_return_state state cmds = Turtlegraphics.remove_turtle state.cr;
+                                            List.iter (eval state base_env) cmds;
+                                            write_out state "dummy.png";
+                                            Turtlegraphics.draw_turtle state.cr state.x state.y
+                                                                       (state.heading *. pi /. 180.);
+                                            state
 
 
 (*
