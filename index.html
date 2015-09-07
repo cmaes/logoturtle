@@ -33,6 +33,7 @@
         var controller = repl.console({
           promptLabel: 'Logo> ',
           promptHistory: true,
+          autofocus: true,
           commandValidate: function (line) {
              if (line == "") return false;
              else return true;
@@ -43,13 +44,13 @@
           },
           welcomeMessage: 'Welcome to the LOGO interpreter\n' +
                           'Commands:\n' +
-                          'forward x  - [fd x] move the turtle forward x pixels\n' +
-                          'back    x  - [bk x] move the turtle backward x pixels\n' +
-                          'right deg  - [rt deg] rotate the turtle right deg degrees\n' +
-                          'left  deg  - [lt deg] rotate the turtle left deg degrees\n' +
-                          'repeat n [ cmds ] - repeat cmds n times\n' +
-                          'to procname :arg1 :arg2\n cmds\nend - define a procedure named procname\n' +
-                          'stop       - return from a procedure\n'
+                          '  forward x  - [fd x] move the turtle forward x pixels\n' +
+                          '  back    x  - [bk x] move the turtle backward x pixels\n' +
+                          '  right deg  - [rt deg] rotate the turtle right deg degrees\n' +
+                          '  left  deg  - [lt deg] rotate the turtle left deg degrees\n' +
+                          '  repeat n [ cmds ] - repeat cmds n times\n' +
+                          '  to procname :arg1 :arg2\n\tcmds\n\tend - define a procedure named procname\n' +
+                          '  stop       - return from a procedure\n'
 
         });
         }, 100);
