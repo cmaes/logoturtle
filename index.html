@@ -27,6 +27,11 @@
          background:#fff;
          overflow:auto
       }
+      canvas {
+        margin: 20px;
+        border-style: solid;
+        border-width: 1px;
+      }
     </style>
     <script type="text/javascript" src="logoweb.js"></script>
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
@@ -69,7 +74,9 @@
                           '  left  deg  - [lt deg] rotate the turtle left deg degrees\n' +
                           '  repeat n [ cmds ] - repeat cmds n times\n' +
                           '  to procname :arg1 :arg2\n\tcmds\n\tend - define a procedure named procname\n' +
-                          '  stop       - return from a procedure\n'
+                          '  stop       - return from a procedure\n\n' +
+                          '  Hit [enter] to evaluate a command\n' +
+                          '  Hit [shift] + [enter] to go to a new line\n'
 
         });
         }, 100);
