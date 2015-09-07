@@ -45,6 +45,7 @@ let div = Html.createDiv document
 
 let start d s  _ = Dom.appendChild document##body d;
                    Dom.appendChild d s.cr.cr;
+                   interpet d s "rt 360";
                    Js._false
 
 
