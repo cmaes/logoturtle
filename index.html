@@ -9,6 +9,24 @@
         width: 800px;
         height: 200px;
       }
+      #console {
+       padding: 10px;
+       font-family: monospace;
+       font-size: 14px;
+       color: #6C7B89;
+       background: #ffffff;
+       margin-bottom: 50px;
+       display: block;
+      }
+      #container {
+        display: block;
+        margin-bottom: 40px;
+      }
+      div.console div.jquery-console-inner
+       { height:300px;
+         background:#fff;
+         overflow:auto
+      }
     </style>
     <script type="text/javascript" src="logoweb.js"></script>
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
@@ -28,12 +46,13 @@
 
       $(document).ready(function () {
         setTimeout(function() {
-        var repl = $('<div class="console" style="height: 200px">');
+        var repl = $('<div class="console" id="console">');
         $('body').append(repl);
         var controller = repl.console({
           promptLabel: 'Logo> ',
           promptHistory: true,
           autofocus: true,
+          animateScroll:true,
           commandValidate: function (line) {
              if (line == "") return false;
              else return true;
@@ -42,7 +61,7 @@
             interpetLOGO(line);
             return line;
           },
-          welcomeMessage: 'Welcome to the LOGO interpreter\n' +
+          welcomeMessage: 'Welcome to the LOGO interpreter\n\n' +
                           'Commands:\n' +
                           '  forward x  - [fd x] move the turtle forward x pixels\n' +
                           '  back    x  - [bk x] move the turtle backward x pixels\n' +
