@@ -94,8 +94,28 @@
                           '  to procname :arg1 :arg2\n\tcmds\n\tend - define a procedure named procname\n' +
                           '  stop       - return from a procedure\n\n' +
                           '  Hit [enter] to evaluate a command\n' +
-                          '  Hit [shift] + [enter] to go to a new line\n'
-
+                          '  Hit [shift] + [enter] to go to a new line\n',
+          commands: ["forward", "right", "left", "to", "end", "repeat", "repcount",
+                     "setxy", "sety", "home", "sin", "cos", "power", "ln", "exp", "if",
+                     "stop", "random", "penup", "pendown", "setpencolor", "setpensize",
+                     "setheading"],
+          completeHandle: function(line) {
+            var split = line.split(' ');
+            if (split.length === 1) {
+               prefix = line
+            } else {
+               prefix = split[split.length-1];
+            }
+            var cmds = this.commands;
+            var ret = [];
+            for (var i=0;i<cmds.length;i++) {
+              var cmd=cmds[i];
+              if (cmd.lastIndexOf(prefix,0) === 0) {
+                ret.push(cmd.substring(prefix.length));
+              }
+            }
+            return ret;
+           }
         });
         }, 100);
       });

@@ -17,6 +17,10 @@ logo.native: logo.ml logoturtle.ml turtlegraphics.ml parser.mly lexer.mll
 # logoturtle.byte: logoturtle.ml
 # 	ocamlfind ocamlc -linkpkg -thread -package cairo2 $< -o $@
 
+# Makefile rules for compiling and linking based on:
+# http://caml.inria.fr/pub/docs/oreilly-book/html/book-ora107.html
+# http://caml.inria.fr/pub/docs/oreilly-book/html/book-ora066.html
+
 lexer.ml: lexer.mll
 	ocamllex lexer.mll
 
