@@ -46,7 +46,9 @@ type turtlecontext = { mutable cr : Html.canvasElement Js.t;
                        mutable backup: Html.imageData Js.t;
                        mutable saved: bool;
                        mutable w : float;
-                       mutable h : float}
+                       mutable h : float;
+                       mutable x : float;
+                       mutable y : float;}
 
 let document = Html.window##document
 
@@ -54,14 +56,27 @@ let document = Html.window##document
 let stroke c  = print_endline "stroke";
                 c.ctx##stroke ()
 let move_to c x y = print_endline ("moveTo " ^ (string_of_float x) ^ " " ^ (string_of_float y));
+                    c.x <- x;
+                    c.y <- y;
                     c.ctx##moveTo (x, y)
 let line_to c x y = print_endline ("lineTo " ^ (string_of_float x) ^ " " ^ (string_of_float y));
+                    c.x <- x;
+                    c.y <- y;
                     c.ctx##lineTo (x, y)
-let set_line_width ctx x = print_endline ("NOT IMPLEMENTED: set_line_width " ^ (string_of_float x))
-let set_source_rgb ctx r g b = print_endline ("NOT IMPLEMENTED: set_source_rgb " ^
-                                                (string_of_float r) ^ " " ^
-                                                (string_of_float g) ^ " " ^
-                                                (string_of_float b))
+let set_line_width c w = c.ctx##stroke ();
+                         c.ctx##beginPath ();
+                         c.ctx##moveTo (c.x, c.y);
+                         c.ctx##lineWidth <- w
+
+let set_source_rgb c r g b = let rn = int_of_float (255.0 *. r) in
+                               let gn = int_of_float (255.0 *. g) in
+                               let bn = int_of_float (255.0 *. b) in
+                               c.ctx##stroke ();
+                               c.ctx##beginPath ();
+                               c.ctx##moveTo (c.x, c.y);
+                               c.ctx##strokeStyle <- Js.string ("rgb(" ^ string_of_int rn ^ "," ^
+                                                                  string_of_int gn ^ "," ^
+                                                                    string_of_int bn ^ ")")
 let write_out c filename = stroke c;
                            print_endline ("NOT IMPLEMENTED: write_out " ^ filename )
 
@@ -98,4 +113,4 @@ let create_context w h = let c = Html.createCanvas document in
                          ctx##translate (wf /. 2.0 +. 0.5, hf /. 2.0 +. 0.5);
                          ctx##beginPath ();
                          ctx##moveTo (0., 0.);
-                         { cr = c;  ctx = ctx; backup = ctx##getImageData (0., 0., wf, hf); saved = false; w = wf; h = hf;}
+                         { cr = c;  ctx = ctx; backup = ctx##getImageData (0., 0., wf, hf); saved = false; w = wf; h = hf; x = 0.; y = 0.;}
