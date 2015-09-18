@@ -56,6 +56,7 @@ and
 
 
 exception ArgumentException of string
+exception RuntimeException of string
 
 let square = Repeat ((Number 4.0),
                      [Forward (Number 1.0); Right (Number 90.)]);;
@@ -140,10 +141,10 @@ let forward n state = let r = (state.heading *. pi /. 180.0) -. (pi /. 2.0) in
 let penup lst state = match lst with
     | [] -> Turtlegraphics.stroke state.cr;
             state.pendown <- false
-    | _ -> failwith "penup expected no arguments"
+    | _ -> raise (ArgumentException "penup expected no arguments")
 let pendown lst state = match lst with
     | [] -> state.pendown <- true
-    | _ -> failwith "pendown expected no arguments"
+    | _ -> raise (ArgumentException "pendown expected no arguments")
 
 let setpencolor lst state = match lst with
     | [VFloat nfloat] -> let n = (int_of_float nfloat) in
@@ -153,13 +154,13 @@ let setpencolor lst state = match lst with
                            Turtlegraphics.set_source_rgb state.cr clr.r clr.g clr.b;
                            Turtlegraphics.move_to state.cr state.x state.y
                          else
-                           failwith "Invalid color specification"
-    | _ -> failwith "setpencolor expected one numeric argument"
+                           raise (ArgumentException "Invalid color specification")
+    | _ -> raise (ArgumentException "setpencolor expected one numeric argument")
 let setpensize lst state = match lst with
     | [VFloat size] -> Turtlegraphics.stroke state.cr;
                        Turtlegraphics.move_to state.cr state.x state.y;
                        Turtlegraphics.set_line_width state.cr size
-    | _ -> failwith "setpensize expected one numeric argument"
+    | _ -> raise (ArgumentException "setpensize expected one numeric argument")
 
 let home lst state = match lst with
   | [] -> Turtlegraphics.stroke state.cr;
@@ -167,27 +168,27 @@ let home lst state = match lst with
           state.y <- 0.;
           state.heading <- 0.;
           Turtlegraphics.move_to state.cr state.x state.y
-  | _ -> failwith "home expected no arguments"
+  | _ -> raise (ArgumentException "home expected no arguments")
 
 let seth lst state = match lst with
   | [ VFloat angle ] -> state.heading <- angle
-  | _ -> failwith "seth expected one numeric argument"
+  | _ -> raise (ArgumentException "seth expected one numeric argument")
 
 let setx lst state = match lst with
   | [ VFloat x ] -> state.x <- x;
                     domove state
-  | _ -> failwith "setx expected one numeric argument"
+  | _ -> raise (ArgumentException "setx expected one numeric argument")
 
 let sety lst state = match lst with
   | [ VFloat y ] -> state.y <- ~-.y;
                     domove state
-  | _ -> failwith "sety expected one numeric argument"
+  | _ -> raise (ArgumentException "sety expected one numeric argument")
 
 let setxy lst state = match lst with
   | VFloat x :: VFloat y :: [] -> state.x <- x;
                                   state.y <- ~-.y;
                                   domove state
-  | _ -> failwith "setxy expected two numeric arguments"
+  | _ -> raise (ArgumentException "setxy expected two numeric arguments")
 
 let create procs names =
   let ctx = Turtlegraphics.create_context 800 800 in
@@ -235,7 +236,7 @@ let unary_float_value name g = UnaryVal
                                       (* print_endline (name ^ ":" ^ (string_of_float f) ^ "=" ^
                                                        (string_of_float c)); *)
                                       VFloat c
-                                   | VBool b -> failwith (name ^ " expected number"))
+                                   | VBool b -> raise (ArgumentException (name ^ " expected number")))
 
 
 let sin_val = unary_float_value "sin" (fun deg -> sin (deg *. pi /. 180.))
@@ -245,7 +246,7 @@ let ln_val  = unary_float_value "ln" log
 let rand_val = unary_float_value "random" (fun flt -> float_of_int (Random.int (int_of_float flt)))
 let power_val = BinaryVal (fun base exp -> match (base, exp) with
                                            | (VFloat a, VFloat n) -> VFloat (a ** n)
-                                           | _, _ -> failwith "power expected two numeric arguments")
+                                           | _, _ -> raise (ArgumentException "power expected two numeric arguments"))
 
 let create_base_env funcs names = let empty = StringMap.empty in
                                   List.fold_left2 (fun env key func -> StringMap.add key func env)
@@ -267,26 +268,29 @@ let expr_of_value = function
 
 let float_of_value = function
   | VFloat f -> f
-  | VBool  b -> failwith "Number expected"
+  | VBool  b -> raise (RuntimeException "Number expected")
 
 let bool_of_value = function
   | VBool b -> b
-  | VFloat f -> failwith "Boolean expected"
+  | VFloat f -> raise (RuntimeException "Boolean expected")
 
 let value_of_mapval = function
   | Val v -> v
-  | _ -> failwith "Value expected"
+  | _ -> raise (RuntimeException "Value expected")
 
 let unaryval_of_mapval = function
   | UnaryVal v -> v
-  | _ -> failwith "Function of 1 argument expected"
+  | _ -> raise (RuntimeException "Function of 1 argument expected")
 
 let binaryval_of_mapval = function
   | BinaryVal v -> v
-  | _ -> failwith "Function of 2 arguments expected"
+  | _ -> raise (RuntimeException "Function of 2 arguments expected")
+
+let lookup_var name env = try (StringMap.find name env) with
+                           | Not_found -> raise (RuntimeException ("Variable " ^ name ^ " not found"))
 
 let rec eval_expr env = function
-  | Var name           -> value_of_mapval (StringMap.find name env)
+  | Var name           -> value_of_mapval (lookup_var name env)
   | Bool b             -> VBool  b
   | Number n           -> VFloat n
   | UnaryFunc (name, e) -> let myfunc = unaryval_of_mapval (StringMap.find name env) in
@@ -295,56 +299,59 @@ let rec eval_expr env = function
                                 myfunc (eval_expr env e1) (eval_expr env e2)
   | Plus  (e1, e2)     -> (match (eval_expr env e1),  (eval_expr env e2) with
                            | VFloat a, VFloat b -> VFloat (a +. b)
-                           | _,_ -> failwith "Numbers expected in addition")
+                           | _,_ -> raise (RuntimeException "Numbers expected in addition"))
   | Minus (e1, e2)     -> (match (eval_expr env e1), (eval_expr env e2) with
                            | VFloat a, VFloat b -> VFloat (a -. b)
-                           | _,_ -> failwith "Numbers expected in subtraction")
+                           | _,_ -> raise (RuntimeException "Numbers expected in subtraction"))
   | Times (e1, e2)     -> (match (eval_expr env e1), (eval_expr env e2) with
                            | VFloat a, VFloat b -> VFloat (a *. b)
-                           | _,_ -> failwith "Numbers expected in multiplication")
+                           | _,_ -> raise (RuntimeException "Numbers expected in multiplication"))
   | Divide (e1, e2)    -> (match (eval_expr env e1), (eval_expr env e2) with
-                           | VFloat a, VFloat 0.0 -> failwith "Division by zero"
+                           | VFloat a, VFloat 0.0 -> raise (RuntimeException "Division by zero")
                            | VFloat a, VFloat b   -> VFloat (a /. b)
-                           | _,_ -> failwith "Numbers expected in division")
+                           | _,_ -> raise (RuntimeException "Numbers expected in division"))
   | Negate e           -> (match (eval_expr env e) with
                            | VFloat a -> VFloat ~-. a
-                           | _ -> failwith "Numbers expected in negation")
+                           | _ -> raise (RuntimeException "Number expected in negation"))
   | Or (e1, e2)        -> (match (eval_expr env e1) with
                            | VBool true -> VBool true
                            | VBool a -> (match  (eval_expr env e2) with
                                          | VBool b -> VBool (a || b)
-                                         | _ -> failwith "Boolean expected in or")
-                           | _ -> failwith "Booleans expected in or")
+                                         | _ -> raise (RuntimeException "Boolean expected in or"))
+                           | _ -> raise (RuntimeException "Booleans expected in or"))
   | And (e1, e2)       -> (match (eval_expr env e1) with
                            | VBool false -> VBool false
                            | VBool a -> (match (eval_expr env e2) with
                                          | VBool b -> VBool (a && b)
-                                         | _ -> failwith "Boolean expected in and")
-                           | _ -> failwith "Boolean expected in and")
+                                         | _ -> raise (RuntimeException "Boolean expected in and"))
+                           | _ -> raise (RuntimeException "Boolean expected in and"))
   | Not e              -> (match (eval_expr env e) with
                            | VBool a -> VBool (not a)
-                           | _ -> failwith "Boolean expected in not")
+                           | _ -> raise (RuntimeException "Boolean expected in not"))
   | Less (e1, e2)      -> (match (eval_expr env e1), (eval_expr env e2) with
                            | VFloat a, VFloat b -> VBool (a < b)
-                           | _,_ -> failwith "Number expected in < comparsion")
+                           | _,_ -> raise (RuntimeException "Number expected in < comparsion"))
   | Greater (e1, e2)   -> (match (eval_expr env e1), (eval_expr env e2) with
                            | VFloat a, VFloat b -> VBool (a > b)
-                           | _,_ -> failwith "Number expected in > comparison")
+                           | _,_ -> raise (RuntimeException "Number expected in > comparison"))
   | Equal   (e1, e2)   -> (match (eval_expr env e1), (eval_expr env e2) with
                            | VFloat a, VFloat b -> VBool (a = b)
-                           | _,_ -> failwith "Number expected in == comparison")
+                           | _,_ -> raise (RuntimeException "Number expected in == comparison"))
   | NEqual  (e1, e2)   -> (match (eval_expr env e1), (eval_expr env e2) with
                            | VFloat a, VFloat b -> VBool (a != b)
-                           | _,_ -> failwith "Number expected in != comparsion")
+                           | _,_ -> raise (RuntimeException "Number expected in != comparsion"))
   | LessEq  (e1, e2)   -> (match (eval_expr env e1), (eval_expr env e2) with
                            | VFloat a, VFloat b -> VBool (a <= b)
-                           | _,_ -> failwith "Number expected in <= comparison")
+                           | _,_ -> raise (RuntimeException "Number expected in <= comparison"))
   | GreaterEq (e1, e2) -> (match (eval_expr env e1), (eval_expr env e2) with
                            | VFloat a, VFloat b -> VBool (a >= b)
-                           | _,_ -> failwith "Number expected in >= comparison")
+                           | _,_ -> raise (RuntimeException "Number expected in >= comparison"))
 
 
 exception StopException
+
+let lookup_proc symtable name = try Hashtbl.find symtable name with
+                                | Not_found -> raise (RuntimeException ("Procedure " ^ name ^ " not found"))
 
 let rec eval state env inst =
   match inst with
@@ -361,7 +368,7 @@ let rec eval state env inst =
      done
   | Procdef (name, ps, cmds) -> Hashtbl.add state.symbol_table name (UserProc (ps, cmds))
   | Call (name, args) ->
-     let procedure  = Hashtbl.find state.symbol_table name in
+     let procedure  = lookup_proc state.symbol_table name in
      (match procedure with
        | UserProc (ps, cmds) -> (
          if List.length ps <> List.length args then

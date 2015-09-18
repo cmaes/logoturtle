@@ -17,16 +17,14 @@ exception SyntaxError of string
 
 let print_position lexbuf =
   let pos = lexbuf.lex_curr_p in
-  Printf.printf "%s:%d:%d" pos.pos_fname pos.pos_lnum (pos.pos_cnum - pos.pos_bol + 1)
+  Printf.sprintf "%s:%d:%d" pos.pos_fname pos.pos_lnum (pos.pos_cnum - pos.pos_bol + 1)
 
 let parse_with_error lexbuf =
   try Parser.prog Lexer.read lexbuf with
   | SyntaxError msg ->
-     print_position lexbuf;
-     exit (-1)
+     raise (SyntaxError ("Syntax error " ^ msg ^ (print_position lexbuf)))
   | Parser.Error ->
-     print_position lexbuf;
-     exit (-1)
+     raise (SyntaxError ("Parser error " ^ (print_position lexbuf)))
 
 let rec parse_and_print lexbuf =
   Logoturtle.print_commands (parse_with_error lexbuf)
@@ -35,11 +33,15 @@ let rec parse_print_and_eval lexbuf state =
   let ast_list = parse_with_error lexbuf in
   Logoturtle.print_commands ast_list;
   print_string "\nnow evaling\n";
-  Logoturtle.eval_commands_return_state state ast_list
-
+  Logoturtle.eval_commands_return_state state ast_list;
+  ""
 
 let interpet d state str = let lexbuf = Lexing.from_string str in
-                           parse_print_and_eval lexbuf state
+                           try parse_print_and_eval lexbuf state with
+                             | SyntaxError msg -> msg
+                             | ArgumentException msg -> msg
+                             | RuntimeException msg -> msg
+                             |  _ -> "unknown exception"
 
 let div = Html.createDiv document
 
@@ -53,4 +55,4 @@ let _ =
   let state = Logoturtle.create_state in
   Html.window##onload <- Html.handler (start div state);
   Js.Unsafe.global##printOCAMLString <- Js.wrap_callback (fun s -> print_endline ("Hi " ^ (Js.to_string s)));
-  Js.Unsafe.global##interpetLOGO <- Js.wrap_callback (fun s -> interpet div state (Js.to_string s))
+  Js.Unsafe.global##interpetLOGO <- Js.wrap_callback (fun s -> (js (interpet div state (Js.to_string s))))
