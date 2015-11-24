@@ -6,6 +6,8 @@
 Use the Real World Haskell installation instructions
 https://github.com/realworldocaml/book/wiki/Installation-Instructions
 
+## On Linux
+
 ```
 $ sudo add-apt-repository ppa:avsm/ppa
 $ sudo apt-get update
@@ -18,6 +20,26 @@ opam init
 eval `opam config env`
 ```
 
+## On Mac
+
+Install Homebrew http://brew.sh. 
+
+```
+brew install ocaml
+brew install opam
+```
+
+Then do
+```
+opam init
+eval `opam config env`
+```
+
+## Install ocamlfind
+
+```
+opam install ocamlfind
+```
 
 ## Install the Cairo Ocaml bindings
 
@@ -25,6 +47,12 @@ https://github.com/Chris00/ocaml-cairo
 
 ```
 opam install cairo2
+```
+
+## Install js_of_ocaml
+
+```
+opam install js_of_ocaml
 ```
 
 
