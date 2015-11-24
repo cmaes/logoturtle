@@ -1,12 +1,21 @@
-# Make your own Logo Interperter
+# A Logo Interperter in Ocaml (and Javascript)
+
+## Run the interperter in your browser
+
+Visit http://cmaes.github.io/logoturtle/
 
 
-## Install OCAML
+## Installation
+
+The following directions describe how to install the dependencies for
+running the code locally.
+
+### Install OCAML
 
 Use the Real World Haskell installation instructions
 https://github.com/realworldocaml/book/wiki/Installation-Instructions
 
-## On Linux
+#### On Linux
 
 ```
 $ sudo add-apt-repository ppa:avsm/ppa
@@ -20,7 +29,7 @@ opam init
 eval `opam config env`
 ```
 
-## On Mac
+#### On Mac
 
 Install Homebrew http://brew.sh. 
 
@@ -41,7 +50,7 @@ eval `opam config env`
 opam install ocamlfind
 ```
 
-## Install the Cairo Ocaml bindings
+### Install the Cairo Ocaml bindings
 
 https://github.com/Chris00/ocaml-cairo
 
@@ -49,14 +58,14 @@ https://github.com/Chris00/ocaml-cairo
 opam install cairo2
 ```
 
-## Install js_of_ocaml
+### Install js_of_ocaml
 
 ```
 opam install js_of_ocaml
 ```
 
 
-## Run the Logo Interperter
+### Run the Logo Interperter
 
 Issuing the following command
 
@@ -73,6 +82,6 @@ make clean
 ```
 
 
-## Logo Grammar
+#### Logo Grammar
 
 I made my own up. But there is one [here](https://www.cs.duke.edu/courses/spring00/cps108/projects/slogo/slogo.g)
