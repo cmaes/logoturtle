@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+          "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Logo Interpreter</title>
+    <style>
+      #userinput {
+        width: 800px;
+        height: 200px;
+      }
+
+      #container {
+      margin-bottom: 40px;
+      }
+
+      #console {
+      height: 320px;
+      padding: 10px;
+      background: #FFFFFF;
+      font-family: monospace;
+      font-size: 14px;
+      color: #6C7B89;
+      margin-bottom: 10px;
+      }
+
+      #console div.jquery-console-inner {
+      height:300px;
+      margin: 10px 10px;
+      overflow:auto;
+      text-align:left;
+      }
+
+      #console div.jquery-console-message-value {
+      color:#63b132;
+      }
+
+      #console div.jquery-console-prompt-box {
+      color: #6C7B89;
+      }
+
+      #console div.jquery-console-focus span.jquery-console-cursor {
+      background:#6C7B89;
+      color: #FFFFFF;
+      }
+
+      #console div.jquery-console-message-error {
+      color:#FD713B;
+      }
+
+      #console div.jquery-console-message-success {
+      color:#63b132;
+      }
+
+      #console span.jquery-console-prompt-label {
+      font-weight:bold;
+      }
+      canvas {
+        margin: 20px;
+        border-style: solid;
+        border-width: 1px;
+      }
+
+      #sidebar {
+       float: right;
+       width: 300px;
+       margin-right: 10px;
+      }
+
+      pre {
+       border-style: solid;
+       border-width: 1px;
+       overflow-x: auto;
+       overflow-y: auto;
+      }
+
+    </style>
+    <script type="text/javascript" src="logoweb.js"></script>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="jquery.console.js"></script>
+    <script>
+      var turtleimg;
+      var controller;
+
+      $(document).ready(function () {
+        setTimeout(function() {
+        var repl = $('<div class="console" id="console">');
+        $('body').append(repl);
+        controller = repl.console({
+          promptLabel: 'Logo> ',
+          promptHistory: true,
+          autofocus: true,
+          animateScroll:true,
+          commandValidate: function (line) {
+             if (line == "") return false;
+             else return true;
+          },
+          commandHandle: function (line) {
+            return interpetLOGO(line);
+          },
+          welcomeMessage: 'Welcome to the LOGO interpreter\n\n' +
+                          'Commands:\n' +
+                          '  forward x  - [fd x] move the turtle forward x pixels\n' +
+                          '  back    x  - [bk x] move the turtle backward x pixels\n' +
+                          '  right deg  - [rt deg] rotate the turtle right deg degrees\n' +
+                          '  left  deg  - [lt deg] rotate the turtle left deg degrees\n' +
+                          '  repeat n [ cmds ] - repeat cmds n times\n' +
+                          '  to procname :arg1 :arg2\n\tcmds\n\tend - define a procedure named procname\n' +
+                          '  stop       - return from a procedure\n\n' +
+                          '  Hit [enter] to evaluate a command\n' +
+                          '  Hit [shift] + [enter] to go to a new line\n',
+          commands: ["forward", "right", "left", "to", "end", "repeat", "repcount",
+                     "setxy", "sety", "home", "sin", "cos", "power", "ln", "exp", "if",
+                     "stop", "random", "penup", "pendown", "setpencolor", "setpensize",
+                     "setheading"],
+          completeHandle: function(line) {
+            var split = line.split(' ');
+            if (split.length === 1) {
+               prefix = line
+            } else {
+               prefix = split[split.length-1];
+            }
+            var cmds = this.commands;
+            var ret = [];
+            for (var i=0;i<cmds.length;i++) {
+              var cmd=cmds[i];
+              if (cmd.lastIndexOf(prefix,0) === 0) {
+                ret.push(cmd.substring(prefix.length));
+              }
+            }
+            return ret;
+           }
+        });
+        }, 100);
+      });
+
+      function addtoconsole(my) {
+         console.log('hi', $(my).text());
+         controller.promptText($(my).text());
+         controller.inner.click();
+      }
+</script>
+  </head>
+    <body>
+      <h1>Logo Turtle Graphics</h1>
+      <div id="turtle" style="display:none">
+        <img id="turtleimg" width="50" height="70" src="data:image/png;base64,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"/>
+      </div>
+      <div id="sidebar">
+        <h2>Examples</h2>
+        <pre title="Click me to insert into the console" onclick="addtoconsole(this)">
+repeat 4 [ forward 100 right 90.0 ]
+</pre>
+        <pre title="Click me to insert into the console" onclick="addtoconsole(this)">
+to ldragon :size :level
+   if :level == 0 [
+    fd :size
+    stop
+   ]
+   ldragon :size :level - 1
+   lt 90
+   rdragon :size :level - 1
+end
+
+to rdragon :size :level
+   if :level == 0 [
+   fd :size
+   stop
+   ]
+   ldragon :size :level - 1
+   rt 90
+   rdragon :size :level - 1
+end
+pu fd 0.5 rt 90 fd 0.5 pd
+
+ldragon 2 13
+</pre>
+        <pre title="Click me to insert into the console" onclick="addtoconsole(this)">
+ to tree :level :size
+   if :level > 0 [
+      setpensize :level/2
+      if :level < 3 [
+        setpencolor 10
+      ]
+      if :level >= 3 [
+        setpencolor 0
+      ]
+      fd :size
+      lt 10
+      tree :level-1 :size*0.8
+      rt 10
+      rt 30
+      tree :level-1 :size*0.8
+      lt 30
+      pu
+      back :size
+      pd
+   ]
+end
+pu
+back 200
+pd
+tree 8 60
+          </pre>
+      </div>
+  </body>
+</html>
