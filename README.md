@@ -12,7 +12,7 @@ running the code locally.
 
 ### Install OCAML
 
-Use the Real World Haskell installation instructions
+Use the Real World OCAML installation instructions
 https://github.com/realworldocaml/book/wiki/Installation-Instructions
 
 #### On Linux
