@@ -1,3 +1,7 @@
+# Makefile rules for compiling and linking based on:
+# http://caml.inria.fr/pub/docs/oreilly-book/html/book-ora107.html
+# http://caml.inria.fr/pub/docs/oreilly-book/html/book-ora066.html
+
 all: run
 
 TEST_PROGRAMS := $(wildcard sample_programs/*.logo)
@@ -7,19 +11,20 @@ test: $(TEST_GRAPHICS)
 
 %.png: %.logo logo.native
 	./logo.native $<
+	convert `basename $@` -trim `basename $@`
 
 run: logo.native sample_programs/tree.logo
 	./logo.native sample_programs/tree.logo
 
-logo.native: logo.ml logoturtle.ml turtlegraphics.ml parser.mly lexer.mll
+cairographics: cairographics.ml
+	cp cairographics.ml turtlegraphics.ml
+
+logo.native: logo.ml logoturtle.ml cairographics parser.mly lexer.mll
 	ocamlbuild -use-menhir -tag thread -use-ocamlfind -quiet -pkg core -pkg cairo2 $@
 
+# Uncomment to create bytecode for the cairographics backend
 # logoturtle.byte: logoturtle.ml
 # 	ocamlfind ocamlc -linkpkg -thread -package cairo2 $< -o $@
-
-# Makefile rules for compiling and linking based on:
-# http://caml.inria.fr/pub/docs/oreilly-book/html/book-ora107.html
-# http://caml.inria.fr/pub/docs/oreilly-book/html/book-ora066.html
 
 lexer.ml: lexer.mll
 	ocamllex lexer.mll
@@ -27,7 +32,10 @@ lexer.ml: lexer.mll
 parser.ml parser.mli: parser.mly
 	menhir parser.mly
 
-turtlegraphics.cmo: turtlegraphics.ml
+webgraphics: webgraphics.ml
+	cp webgraphics.ml turtlegraphics.ml
+
+turtlegraphics.cmo: webgraphics
 	 ocamlfind ocamlc -package js_of_ocaml -package js_of_ocaml.syntax -syntax camlp4o -linkpkg -o turtlegraphics.byte turtlegraphics.ml
 
 logoturtle.cmo: logoturtle.ml turtlegraphics.cmo
@@ -54,5 +62,5 @@ graphics.png: logoturtle.byte
 	./logoturtle.byte
 
 clean:
-	-rm *.cmo *.cmi *.png *.byte *.native parser.mli parser.ml lexer.ml logoweb.js
+	-rm *.cmo *.cmi *.png *.byte *.native parser.mli parser.ml lexer.ml logoweb.js turtlegraphics.ml
 	-rm -rf _build/

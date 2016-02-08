@@ -1,6 +1,6 @@
 # A Logo Interperter in Ocaml (and Javascript)
 
-## Run the interperter in your browser
+## Try  the interperter in your browser
 
 Visit http://cmaes.github.io/logoturtle/
 
@@ -31,7 +31,7 @@ eval `opam config env`
 
 #### On Mac
 
-Install Homebrew http://brew.sh. 
+Install Homebrew http://brew.sh.
 
 ```
 brew install ocaml
@@ -65,7 +65,17 @@ opam install js_of_ocaml
 ```
 
 
-### Run the Logo Interperter
+## Building the Logo Interperter
+
+There are two different builds of the interperter:
+
+* A interpreter that runs from the command-line and uses Cairo as
+  backend to output .png files from Logo programs
+
+* A interpreter that runs from Javascript and uses a Canvas backend
+  to output graphics from Logo programs in the browser
+
+## Building the Command-line Interpreter
 
 Issuing the following command
 
@@ -73,13 +83,25 @@ Issuing the following command
 make
 ```
 
-will build and run a program called `logoturtle.byte`. It creates
-a file named `graphics.png` that should contain a star.
+will build and run a program called `logo.native`. It creates
+a file named `tree.png` that should contain a tree.
 
 To clean up do
 ```
 make clean
 ```
+
+## Building the Javascript Interpreter
+
+Issuing the following command
+
+```
+make logoweb.js
+```
+
+will build a Javascript library containing the interpreter. The file
+`index.html` shows how this library may be used from Javascript via
+the `interpetLOGO` command.
 
 
 #### Logo Grammar

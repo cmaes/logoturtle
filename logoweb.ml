@@ -33,7 +33,7 @@ let rec parse_print_and_eval lexbuf state =
   let ast_list = parse_with_error lexbuf in
   Logoturtle.print_commands ast_list;
   print_string "\nnow evaling\n";
-  Logoturtle.eval_commands_return_state state ast_list;
+  ignore (Logoturtle.eval_commands_return_state state ast_list);
   ""
 
 let interpet d state str = let lexbuf = Lexing.from_string str in
@@ -47,7 +47,7 @@ let div = Html.createDiv document
 
 let start d s  _ = Dom.appendChild document##body d;
                    Dom.appendChild d s.cr.cr;
-                   interpet d s "rt 360";
+                   ignore (interpet d s "rt 360");
                    Js._false
 
 

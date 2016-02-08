@@ -191,7 +191,7 @@ let setxy lst state = match lst with
   | _ -> raise (ArgumentException "setxy expected two numeric arguments")
 
 let create procs names =
-  let ctx = Turtlegraphics.create_context 800 800 in
+  let ctx = Turtlegraphics.create_context 1024 1024 in
   let table = Hashtbl.create 100 in
 
   (* add primitive procedures to hash table *)
