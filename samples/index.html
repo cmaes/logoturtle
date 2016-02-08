@@ -1,0 +1,552 @@
+ <html>
+           <head>
+           <style>
+           body {
+             margin: 1em;
+           }
+           img {
+            max-width: 320px;
+            max-height: 320px
+           }
+           .code {
+             width: 70%;
+             float:right }
+           .output {
+             float: left;
+             width: 25%; }
+           .container {
+             margin: 0;
+             margin-bottom: 1em;
+             width: 100%;
+             max-height: 320px;
+             overflow: auto
+            }
+            </style>
+            </head>
+            <body> 
+<div class="container">
+<div class="output"><img src="lissajous1.png"/></div>
+<div class="code"><pre>; Lissajous variation 1 by Samuel Kilchenmann
+
+repeat 360 [setxy (sin(2 * repcount)) * 150 (sin(3 * repcount)) * 150]</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="randomlines.png"/></div>
+<div class="code"><pre>; From http://utdallas.edu/~veerasam/logo/
+
+setpensize 5
+repeat 30 [setpencolor random 16 fd random 200 rt 90]</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="flower.png"/></div>
+<div class="code"><pre>to square :length
+  repeat 4 [forward :length right 90]
+end
+to flower
+  repeat 36 [right 10 square 50]
+end
+flower
+</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="tree3.png"/></div>
+<div class="code"><pre>; Program from http://utdallas.edu/~veerasam/logo/
+
+to tree :level :size :turn
+  if :level > 0 [
+    fd :size
+    lt :turn
+    tree :level - 1 :size * 0.9 :turn - 3
+    rt  :turn
+    rt :turn
+    tree :level - 1 :size * 0.9 :turn - 3
+    lt :turn
+    pu bk :size pd
+  ]
+end
+
+pu
+back 200
+pd
+tree 12 40 25</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="moire.png"/></div>
+<div class="code"><pre>; Moire by Yehuda Katz
+; from http://www.mathcats.com/gallery/15wordcontest.html
+repeat 180 [fd 500 bk 500 rt 2]</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="pentahexagon.png"/></div>
+<div class="code"><pre>; Pentahexagon program by M.H. Elhefni
+; from http://www.mathcats.com/gallery/15wordcontest.html
+repeat 5 [repeat 6 [fd 100 lt 72] lt 144]</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="tree2.png"/></div>
+<div class="code"><pre>; A different tree taken from
+; http://utdallas.edu/~veerasam/logo/
+
+to tree :level :size
+   if :level > 0 [
+      setpensize :level/2
+      if :level < 3 [
+        setpencolor 10
+      ]
+      if :level >= 3 [
+        setpencolor 0
+      ]
+      fd :size
+      lt 10
+      tree :level-1 :size*0.8
+      rt 10
+      rt 30
+      tree :level-1 :size*0.8
+      lt 30
+      pu
+      back :size
+      pd
+   ]
+end
+
+; this code just to put turtle at bottom
+pu
+back 200
+pd
+
+
+tree 13 60
+</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="lissajous4.png"/></div>
+<div class="code"><pre>; Lissajous variation 4 by Samuel Kilchenmann
+
+repeat 360 [setxy (sin(327 * repcount)) * 150 (sin(66 * repcount)) * 150]
+</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="hypercube.png"/></div>
+<div class="code"><pre>; Hypercube program by Frak Caggiano from http://www.mathcats.com/gallery/15wordcontest.html
+repeat 8 [repeat 4 [rt 90 fd 100] bk 100 lt 45] ; comment at eol
+</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="tile.png"/></div>
+<div class="code"><pre>repeat 10 [ right 36.0 repeat 5 [ forward 54 right 72.0]]
+</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="mylona2.png"/></div>
+<div class="code"><pre>; Designs 1-5 program by Alex Mylonas' class
+; from http://www.mathcats.com/gallery/15wordcontest.html
+
+;repeat 36 [fd 60 rt 61 bk 80 lt 41 fd 85 rt 41]
+repeat 16 [fd 85 lt 60 fd 107 bk 72 lt 53 fd 74]
+;repeat 100 [fd 5 + repcount rt 45 fd 10 + repcount rt 60]
+;repeat 36 [repeat 36 [fd 10 rt 10] fd repcount rt 90 fd repcount]
+;repeat 18 [repeat 5 [rt 40 fd 100 rt 120] rt 20]</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="kitedart.png"/></div>
+<div class="code"><pre>; Kite and Dart Tiles by Dr Adam Chalcraft
+; from http://drj11.github.io/curlylogo/gallery/
+
+to dart :x
+pd lt 36 fd :x rt 144 fd :x * 0.618033988 lt 36 fd :x * 0.618033988 rt 144 fd :x rt 144
+end
+to kite :x
+pd lt 36 fd :x rt 108 fd :x * 0.618033988 rt 36 fd :x * 0.618033988 rt 108 fd :x rt 144
+end
+to dartn :n :x
+if :n == 0 [dart :x stop]
+kiten :n - 1 :x * 0.618033988 lt 144 pu bk :x dartn :n - 1 :x * 0.618033988 pu fd :x rt 144
+end
+to lkiten :n :x
+lt 36 pu fd :x rt 144 kiten :n :x * 0.618033988 lt 144 pu bk :x rt 36
+end
+to rkiten :n :x
+rt 36 pu fd :x lt 144 kiten :n :x * 0.618033988 rt 144 pu bk :x lt 36
+end
+to kiten :n :x
+if :n == 0 [kite :x stop]
+lt 36 dartn :n - 1 :x * 0.618033988 rt 36 lkiten :n - 1 :x rkiten :n - 1 :x
+end
+;home
+pu rt 90 fd 250 lt 90 bk 1500 dartn 9 3000
+</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="fiverose.png"/></div>
+<div class="code"><pre>; Five Rose program by Paolo Passaro
+; from http://www.mathcats.com/gallery/fiverosedetails.html
+
+repeat 1800 [rt repcount fd 10 lt repcount fd 5 rt repcount rt .1]</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="randomsquares.png"/></div>
+<div class="code"><pre>; Random squares from
+; http://utdallas.edu/~veerasam/logo/
+
+to sq :size
+   repeat 4 [
+          fd :size
+          rt 90
+          ]
+end
+
+repeat 20 [
+  setpencolor random 16
+  setpensize random 5
+  sq random 200
+  rt random 360
+]</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="mylona3.png"/></div>
+<div class="code"><pre>; Designs 1-5 program by Alex Mylonas' class
+; from http://www.mathcats.com/gallery/15wordcontest.html
+
+;repeat 36 [fd 60 rt 61 bk 80 lt 41 fd 85 rt 41]
+;repeat 16 [fd 85 lt 60 fd 107 bk 72 lt 53 fd 74]
+repeat 100 [fd 5 + repcount rt 45 fd 10 + repcount rt 60]
+;repeat 36 [repeat 36 [fd 10 rt 10] fd repcount rt 90 fd repcount]
+;repeat 18 [repeat 5 [rt 40 fd 100 rt 120] rt 20]</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="mylona5.png"/></div>
+<div class="code"><pre>; Designs 1-5 program by Alex Mylonas' class
+; from http://www.mathcats.com/gallery/15wordcontest.html
+
+;repeat 36 [fd 60 rt 61 bk 80 lt 41 fd 85 rt 41]
+;repeat 16 [fd 85 lt 60 fd 107 bk 72 lt 53 fd 74]
+;repeat 100 [fd 5 + repcount rt 45 fd 10 + repcount rt 60]
+;repeat 36 [repeat 36 [fd 10 rt 10] fd repcount rt 90 fd repcount]
+repeat 18 [repeat 5 [rt 40 fd 100 rt 120] rt 20]</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="polygonvar1.png"/></div>
+<div class="code"><pre>; Polygon variation 1 by Paolo Passaro
+; from http://www.mathcats.com/gallery/15wordcontest.html
+
+repeat 4 [repeat 30 [lt 90 fd 4 rt 90 fd 4] rt 90]</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="brownian.png"/></div>
+<div class="code"><pre>; Brownian Motion by Erez Katz
+; from http://www.mathcats.com/gallery/15wordcontest.html
+
+repeat 10000 [fd 3 * ((-1) + random 2) rt 90 * random 4]
+</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="polygonvar2.png"/></div>
+<div class="code"><pre>; Polygon variation 2 by Paolo Passaro
+; from http://www.mathcats.com/gallery/15wordcontest.html
+
+repeat 4 [repeat 20 [lt 160 fd 20 rt 160 fd 20] rt 90]</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="tadpole.png"/></div>
+<div class="code"><pre>; Tadpole Chaos program
+; from http://drj11.github.io/curlylogo/gallery/
+
+to inspin :side :angle :inc :n
+repeat :n [ fd :side rt :angle + :inc * repcount ]
+end
+inspin 2 2 3.14159265359  22222</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="rosevar1.png"/></div>
+<div class="code"><pre>; Rose variation 1 by Keith Enevoldsen
+repeat 180 [seth repcount fd 200 * sin repcount*7 home]</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="sawblade.png"/></div>
+<div class="code"><pre>to sawtooth
+  right   45
+  forward 56.56 ; this is an comment at the end of a line
+  left    135
+  forward 40
+  right   90
+end
+
+to sawblade
+  repeat 12 [ sawtooth right 30 ]
+end
+
+sawblade
+</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="mylona1.png"/></div>
+<div class="code"><pre>; Designs 1-5 program by Alex Mylonas' class
+; from http://www.mathcats.com/gallery/15wordcontest.html
+
+repeat 36 [fd 60 rt 61 bk 80 lt 41 fd 85 rt 41]
+;repeat 16 [fd 85 lt 60 fd 107 bk 72 lt 53 fd 74]
+;repeat 100 [fd 5 + repcount rt 45 fd 10 + repcount rt 60]
+;repeat 36 [repeat 36 [fd 10 rt 10] fd repcount rt 90 fd repcount]
+;repeat 18 [repeat 5 [rt 40 fd 100 rt 120] rt 20]</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="fern.png"/></div>
+<div class="code"><pre>to fern :size :sign
+  if :size < 1  [ stop ]
+  fd :size
+  rt 70 * :sign fern :size * 0.5 :sign * (-1) lt 70 * :sign
+  fd :size
+  lt 70 * :sign fern :size * 0.5 :sign rt 70 * :sign
+  rt 7 * :sign fern :size - 1 :sign lt 7 * :sign
+  bk :size * 2
+end
+
+;; this code just to start turtle off in lower left corner
+pu
+bk 200
+lt 90
+fd 100
+rt 90
+pd
+
+fern 25 1</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="fanblade.png"/></div>
+<div class="code"><pre>; Fanblade program from http://fmslogo.sourceforge.net/workshop/getting-started.shtml
+to fanblade
+  repeat 2 [
+    forward 100
+    right   135
+    forward 20
+    right   45
+  ]
+end
+
+to fan
+  repeat 8 [
+    fanblade
+    left    135
+    forward 20
+  ]
+end
+
+fan</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="lissajous2.png"/></div>
+<div class="code"><pre>; Lissajous variation 2 by Samuel Kilchenmann
+
+repeat 360 [setxy (sin(89 * repcount)) * 150 (sin(179 * repcount)) * 150]
+</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="ellipse.png"/></div>
+<div class="code"><pre>; Ellipse program by Paolo Passaro
+; from http://www.mathcats.com/gallery/15wordcontest.html
+; The eccentricity is e=0.5. If e = 0 you have a circle and if
+; e < 0 or e > 0 you have an ellipse horizontal or vertical
+repeat 360 [rt repcount fd 1 lt repcount * 2 fd 0.5 rt repcount]</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="fanflower.png"/></div>
+<div class="code"><pre>; Fan Flower by Keith Enevoldsen
+
+pu
+fd 100
+pd
+repeat 12 [repeat 75 [fd 100 bk 100 rt 2] fd 250]</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="mylona4.png"/></div>
+<div class="code"><pre>; Designs 1-5 program by Alex Mylonas' class
+; from http://www.mathcats.com/gallery/15wordcontest.html
+
+;repeat 36 [fd 60 rt 61 bk 80 lt 41 fd 85 rt 41]
+;repeat 16 [fd 85 lt 60 fd 107 bk 72 lt 53 fd 74]
+;repeat 100 [fd 5 + repcount rt 45 fd 10 + repcount rt 60]
+repeat 36 [repeat 36 [fd 10 rt 10] fd repcount rt 90 fd repcount]
+;repeat 18 [repeat 5 [rt 40 fd 100 rt 120] rt 20]</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="dahlia.png"/></div>
+<div class="code"><pre>; Dahlia program by David Eisenstat
+; from http://www.mathcats.com/gallery/15wordcontest.html
+
+repeat 8 [rt 45 repeat 6 [repeat 90 [fd 2 rt 2] rt 90]]
+
+; The 6 can be replaced with 1 to 7 for other flowers.
+; For numbers greater than 7, the patterns repeat.
+; This will work without modification in absolutely all Logo implementations.</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="slalom.png"/></div>
+<div class="code"><pre>; Slalom Scrolls
+
+repeat 2000 [
+       fd 5
+       rt (90 * sin repcount)
+]</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="feathers.png"/></div>
+<div class="code"><pre>; Feathers by Marian Rosen
+
+;repeat 12 [repeat random 50 [fd 100 bk 95 rt 2] rt 180]
+repeat 50 [repeat random 100 [fd 300 bk 295 rt 2] rt 180]
+</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="tenrose.png"/></div>
+<div class="code"><pre>; Ten Rose program by Paolo Passaro
+; from http://www.mathcats.com/gallery/fiverosedetails.html
+
+repeat 3600 [ fd 10 rt repcount + .2 ]
+</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="square.png"/></div>
+<div class="code"><pre>repeat 4 [ forward 100 right 90.0 ]
+</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="tree.png"/></div>
+<div class="code"><pre>to tree :size
+   if :size < 5 [forward :size back :size stop]
+   forward :size/3
+   left 30 tree :size*2/3 right 30
+   forward :size/6
+   right 25 tree :size/2 left 25
+   forward :size/3
+   right 25 tree :size/2 left 25
+   forward :size/6
+   back :size
+end
+tree 150</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="lissajous3.png"/></div>
+<div class="code"><pre>; Lissajous variation 3 by Samuel Kilchenmann
+
+repeat 360 [setxy (sin(254 * repcount)) * 150 (sin(201 * repcount)) * 150]
+</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="star.png"/></div>
+<div class="code"><pre>repeat 5 [ forward 100 right 144.0 ]
+</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="mancala.png"/></div>
+<div class="code"><pre>; Samanid Mancala program taken from http://drj11.github.io/curlylogo/gallery/
+setpencolor 9 pu bk 100 pd setpensize 8
+repeat 7 [ fd 200 rt 360 * 1.5 / 7 fd 80 rt 360 * 1.5 / 7 ]</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="polygonvar3.png"/></div>
+<div class="code"><pre>; Polygon variation 3 by Paolo Passaro
+; from http://www.mathcats.com/gallery/15wordcontest.html
+
+repeat 8 [repeat 20 [lt 170 fd 20 rt 170 fd 20] rt 45]</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="kochcurve.png"/></div>
+<div class="code"><pre>; Koch Curve program from
+; http://utdallas.edu/~veerasam/logo/
+
+to kochCurve :level :size
+  if :level < 1 [ fd :size stop ]
+  kochCurve :level - 1 :size / 3
+  lt 60
+  kochCurve :level - 1 :size / 3
+  rt 120
+  kochCurve :level - 1 :size / 3
+  lt 60
+  kochCurve :level - 1 :size / 3
+end
+
+;cs
+rt 90
+kochCurve 4 200</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="ldragon.png"/></div>
+<div class="code"><pre>; Dragon curve program based on
+;   http://drj11.github.io/curlylogo/gallery/
+; which is adapted from Turtle Geometry: The Computer as a Medium for
+; Exploring Mathematics
+; by Harold Abelson and Adrea diSessa
+
+to ldragon :size :level
+   if :level == 0 [
+    fd :size
+    stop
+   ]
+   ldragon :size :level - 1
+   lt 90
+   rdragon :size :level - 1
+end
+
+to rdragon :size :level
+   if :level == 0 [
+   fd :size
+   stop
+   ]
+   ldragon :size :level - 1
+   rt 90
+   rdragon :size :level - 1
+end
+; we don't support the next command yet
+; cs setpw 1
+pu fd 0.5 rt 90 fd 0.5 pd
+
+ldragon 2 13</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="head.png"/></div>
+<div class="code"><pre>; Head program by Keith Enevoldsen
+; from http://www.mathcats.com/gallery/15wordcontest.html
+
+repeat 38 [fd 5 rt 10]
+setx 55
+setx 27
+setxy 20 (-10)
+setx 27
+</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="roses.png"/></div>
+<div class="code"><pre>; Roses program by Paolo Passaro
+; from http://www.mathcats.com/gallery/fiverosedetails.html
+
+to roses :l :n :k
+; l is the step size
+; n is the number of roses
+; k is the order
+repeat 360 * :n [
+       fd :l
+       rt  repcount + ((2 * :k - :n) / ( 2 * :n))
+       ]
+end
+;roses 5 5 3
+;roses 5 7 3
+;roses 5 10 7
+roses 5 12 5
+</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="starfish.png"/></div>
+<div class="code"><pre>; Starfish Program by Paolo Passaro and Julie Clune
+; from http://www.mathcats.com/gallery/15wordcontest.html
+; and http://www.mathcats.com/gallery/fiverosedetails.html
+
+repeat 1800 [fd 10 rt repcount + .1 ]</pre></div>
+</div>
+<div class="container">
+<div class="output"><img src="eye.png"/></div>
+<div class="code"><pre>; Eye by Paolo Passaro
+
+repeat 1800 [fd ln repcount bk 10*sin repcount rt 10]</pre></div>
+</div>
+</body>
+</html>
