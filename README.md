@@ -1,5 +1,7 @@
 # A Logo Interperter in Ocaml (and Javascript)
 
+![A tree created in Logo](http://chrisma.es/logoturtle/samples/tree2.png)
+
 ## Try  the interperter in your browser
 
 Visit http://cmaes.github.io/logoturtle/
