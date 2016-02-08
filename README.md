@@ -4,6 +4,8 @@
 
 Visit http://cmaes.github.io/logoturtle/
 
+See [this page](http://cmaes.github.io/logoturtle/samples) for sample
+programs and their graphical output.
 
 ## Installation
 
