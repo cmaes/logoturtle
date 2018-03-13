@@ -52,7 +52,7 @@ and
             mutable heading: float;
             mutable pendown: bool;
             mutable cr: Turtlegraphics.turtlecontext;
-            mutable symbol_table: (bytes, proc) Hashtbl.t }
+            mutable symbol_table: (string, proc) Hashtbl.t }
 
 
 exception ArgumentException of string
@@ -190,7 +190,7 @@ let setxy lst state = match lst with
                                   domove state
   | _ -> raise (ArgumentException "setxy expected two numeric arguments")
 
-let create procs names =
+let create procs (names:string list) =
   let ctx = Turtlegraphics.create_context 1024 1024 in
   let table = Hashtbl.create 100 in
 

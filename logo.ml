@@ -1,4 +1,4 @@
-open Core.Std
+open Core
 open Lexer
 open Lexing
 
@@ -46,8 +46,15 @@ let loop filename () =
   print_string "\n";
   In_channel.close inx
 
-let () =
-  Command.basic ~summary: "Parse and interpet Logo"
-                Command.Spec.(empty +> anon ("filename" %:file))
-                loop
-  |> Command.run
+let spec =
+  let open Command.Spec in
+  empty
+  +> anon ("filename" %: string)
+
+let command =
+  Command.basic_spec    ~summary: "Parse and interpet Logo"
+                        ~readme:(fun () -> "More detailed information")
+    spec
+    (fun filename () -> loop filename ())
+
+let () =  Command.run ~version:"1.0" ~build_info:"RWO" command

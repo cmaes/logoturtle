@@ -66,6 +66,8 @@ opam install cairo2
 
 ```
 opam install js_of_ocaml
+opam install js_of_ocaml-camlp4
+
 ```
 
 
@@ -81,7 +83,7 @@ There are two different builds of the interperter:
 
 ## Building the Command-line Interpreter
 
-Issuing the following command
+Issuing the following command **to build both**.
 
 ```
 make

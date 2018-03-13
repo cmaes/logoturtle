@@ -2,7 +2,7 @@
 # http://caml.inria.fr/pub/docs/oreilly-book/html/book-ora107.html
 # http://caml.inria.fr/pub/docs/oreilly-book/html/book-ora066.html
 
-all: run
+all: logo.native logoweb.js run
 
 TEST_PROGRAMS := $(wildcard sample_programs/*.logo)
 TEST_GRAPHICS = $(TEST_PROGRAMS:.logo=.png)
@@ -36,7 +36,7 @@ webgraphics: webgraphics.ml
 	cp webgraphics.ml turtlegraphics.ml
 
 turtlegraphics.cmo: webgraphics
-	 ocamlfind ocamlc -package js_of_ocaml -package js_of_ocaml.syntax -syntax camlp4o -linkpkg -o turtlegraphics.byte turtlegraphics.ml
+	 ocamlfind ocamlc -package lwt -package js_of_ocaml -package js_of_ocaml.syntax -syntax camlp4o -linkpkg -o turtlegraphics.byte turtlegraphics.ml
 
 logoturtle.cmo: logoturtle.ml turtlegraphics.cmo
 	ocamlc -c logoturtle.ml
