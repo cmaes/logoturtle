@@ -62,6 +62,14 @@ https://github.com/Chris00/ocaml-cairo
 opam install cairo2
 ```
 
+### Install Dependencies
+
+```
+opam install core
+opam install menhir
+opam install lwt
+```
+
 ### Install js_of_ocaml
 
 ```
